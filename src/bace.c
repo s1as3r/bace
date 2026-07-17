@@ -6,4 +6,6 @@
 
 #if OS_LINUX
 #include "linux/base.c"
+#elif OS_WINDOWS
+#include "win32/base.c"
 #endif

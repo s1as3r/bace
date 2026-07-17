@@ -8,6 +8,8 @@
 
 #if OS_LINUX
 #include "bace/linux/base.h" // IWYU pragma: export
+#elif OS_WINDOWS
+#include "bace/win32/base.h" // IWYU pragma: export
 #endif
 
 #endif // !_H_BACE

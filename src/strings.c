@@ -2,10 +2,7 @@
 #include "bace/strings.h"
 #include "bace/arena.h"
 
-#include <stdint.h>
 #include <stdio.h>
-#include <sys/mman.h>
-#include <string.h>
 
 // clang-format off
 global u8 integer_symbol_reverse[128] =
@@ -63,7 +60,7 @@ u8 char_to_lower(u8 c) {
 
 u8 char_to_upper(u8 c) {
   if (char_is_lower(c)) {
-    c += ('A' - 'a');
+    c += (u8)('A' - 'a');
   }
   return c;
 }

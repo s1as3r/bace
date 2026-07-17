@@ -1,10 +1,13 @@
 #include "bace/strings.h"
 #include "bace/bace.h"
 #include "bace/thread_context.h"
-#include <stdint.h>
 
 void init_state(void) {
+#if OS_LINUX
   init_linux_state();
+#elif OS_WINDOWS
+  init_win32_state();
+#endif
 }
 
 #define TEST_INIT init_state()

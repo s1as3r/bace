@@ -1,10 +1,8 @@
-// clang-format off
 #include "bace/thread_context.h"
 #include "bace/linux/base.h"
 
 #include <unistd.h>
 #include <string.h>
-// clang-format on
 
 void *reserve_memory(u64 size) {
   void *res = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
