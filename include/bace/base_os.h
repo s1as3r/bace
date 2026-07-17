@@ -4,7 +4,7 @@
 #include "base.h"
 #include "strings.h"
 
-typedef struct {
+typedef struct SystemInfo {
   u32 logical_processor_count;
   u64 page_size;
   u64 large_page_size;

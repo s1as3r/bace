@@ -60,4 +60,76 @@ typedef uint64_t usize;
 typedef float f32;
 typedef double f64;
 
+// linked list stuff
+#define _check_nil(nil, p) ((p) == 0 || (p) == nil)
+#define _set_nil(nil, p) ((p) = nil)
+
+// doubly-linked-lists
+#define dll_insert_npz(nil, f, l, p, n, next, prev)                                      \
+  (_check_nil(nil, f) ? ((f) = (l) = (n), _set_nil(nil, (n)->next),                      \
+                         _set_nil(nil, (n)->prev)) /* empty list */                      \
+   : _check_nil(nil, p)                            /* p is nil -> insert at front */     \
+       ? ((n)->next = (f), (f)->prev = (n), (f) = (n), _set_nil(nil, (n)->prev))         \
+       : ((p) == (l)) /* pos == last, push back*/                                        \
+             ? ((l)->next = (n), (n)->prev = (l), (l) = (n), _set_nil(nil, (n)->next))   \
+             : (((!_check_nil(nil, p) && _check_nil(nil, (p)->next))                     \
+                     ? (0)                                                               \
+                     : ((p)->next->prev = (n))),                                         \
+                ((n)->next = (p)->next), ((p)->next = (n)),                              \
+                ((n)->prev = (p)))) /* p is somwhere in the middle */
+
+#define dll_push_back_npz(nil, f, l, n, next, prev)                                      \
+  dll_insert_npz(nil, f, l, l, n, next, prev)
+
+#define dll_push_front_npz(nil, f, l, n, next, prev)                                     \
+  dll_insert_npz(nil, l, f, f, n, prev, next)
+
+#define dll_remove_npz(nil, f, l, n, next, prev)                                         \
+  (((n) == (f) ? (f) = (n)->next : (0)), /* n is head */                                 \
+   ((n) == (l) ? (l) = (l)->prev : (0)), /* n is last */                                 \
+   (_check_nil(nil, (n)->prev)                                                           \
+        ? (0)                                                                            \
+        : ((n)->prev->next = (n)->next)), /* bridge over n left side*/                   \
+   (_check_nil(nil, (n)->next)                                                           \
+        ? (0)                                                                            \
+        : ((n)->next->prev = (n)->prev))) /* bridge over n right side*/
+
+// singly-linked, doubly-headed lists (queues)
+#define sll_queue_push_nz(nil, f, l, n, next)                                            \
+  (_check_nil(nil, f) ? ((f) = (l) = (n), _set_nil(nil, (n)->next))                      \
+                      : ((l)->next = (n), (l) = (n), _set_nil(nil, (n)->next)))
+
+#define sll_queue_push_front_nz(nil, f, l, n, next)                                      \
+  (_check_nil(nil, f) ? ((f) = (l) = (n), _set_nil(nil, (n)->next))                      \
+                      : ((n)->next = (f), (f) = (n)))
+
+#define sll_queue_pop_nz(nil, f, l, next)                                                \
+  ((f) == (l) ? (_set_nil(nil, f), _set_nil(nil, l)) : ((f) = (f)->next))
+
+// singly-linked, singly-headed lists (stacks)
+#define sll_stack_push_n(f, n, next) ((n)->next = (f), (f) = (n))
+#define sll_stack_pop_n(f, next) ((f) = (f)->next)
+
+// doubly-linked-list helpers
+#define dll_insert_np(f, l, p, n, next, prev) dll_insert_npz(0, f, l, p, n, next, prev)
+#define dll_push_back_np(f, l, n, next, prev) dll_push_back_npz(0, f, l, n, next, prev)
+#define dll_push_front_np(f, l, n, next, prev) dll_push_front_npz(0, f, l, n, next, prev)
+#define dll_remove_np(f, l, n, next, prev) dll_remove_npz(0, f, l, n, next, prev)
+#define dll_insert(f, l, p, n) dll_insert_npz(0, f, l, p, n, next, prev)
+#define dll_push_back(f, l, n) dll_push_back_npz(0, f, l, n, next, prev)
+#define dll_push_front(f, l, n) dll_push_front_npz(0, f, l, n, next, prev)
+#define dll_remove(f, l, n) dll_remove_npz(0, f, l, n, next, prev)
+
+// singly-linked, doubly-headed list helpers
+#define sll_queue_push_n(f, l, n, next) sll_queue_push_nz(0, f, l, n, next)
+#define sll_queue_push_front_n(f, l, n, next) sll_queue_push_front_nz(0, f, l, n, next)
+#define sll_queue_pop_n(f, l, next) sll_queue_pop_nz(0, f, l, next)
+#define sll_queue_push(f, l, n) sll_queue_push_nz(0, f, l, n, next)
+#define sll_queue_push_front(f, l, n) sll_queue_push_front_nz(0, f, l, n, next)
+#define sll_queue_pop(f, l) sll_queue_pop_nz(0, f, l, next)
+
+// singly-linked, singly-headed list helpers
+#define sll_stack_push(f, n) sll_stack_push_n(f, n, next)
+#define sll_stack_pop(f) sll_stack_pop_n(f, next)
+
 #endif // _H_BASE_DEFS

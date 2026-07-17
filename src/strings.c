@@ -23,8 +23,7 @@ global u8 integer_symbol_reverse[128] =
 
 // character classification
 bool char_is_space(u8 c) {
-  return (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\f' ||
-          c == '\v');
+  return (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\f' || c == '\v');
 }
 
 bool char_is_upper(u8 c) {
@@ -279,16 +278,14 @@ bool str8_match_wildcard(Str8 string, Str8 pattern, StringMatchFlags flags) {
 
   for (;;) {
     if (pattern_cursor == pattern.size) {
-      if (string_cursor == string.size ||
-          (flags & StringMatchFlag_RightSideSloppy)) {
+      if (string_cursor == string.size || (flags & StringMatchFlag_RightSideSloppy)) {
         matched = true;
         break;
       }
     }
 
     if (string_cursor == string.size) {
-      while (pattern_cursor < pattern.size &&
-             pattern.str[pattern_cursor] == '*') {
+      while (pattern_cursor < pattern.size && pattern.str[pattern_cursor] == '*') {
         pattern_cursor += 1;
       }
       matched = (pattern_cursor == pattern.size);
@@ -324,8 +321,7 @@ bool str8_match_wildcard(Str8 string, Str8 pattern, StringMatchFlags flags) {
   return matched;
 }
 
-u64 str8_find_needle(Str8 string, u64 start_pos, Str8 needle,
-                     StringMatchFlags flags) {
+u64 str8_find_needle(Str8 string, u64 start_pos, Str8 needle, StringMatchFlags flags) {
   u8 *p = string.str + start_pos;
   u64 stop_offset = max(string.size + 1, needle.size) - needle.size;
   u8 *stop_p = string.str + stop_offset;
@@ -388,5 +384,203 @@ bool str8_is_before(Str8 a, Str8 b) {
       result = (a.size < b.size);
     }
   }
+  return result;
+}
+
+// list stuff
+Str8Node *str8_list_push_node(Str8List *list, Str8Node *node) {
+  sll_queue_push(list->first, list->last, node);
+  list->node_count += 1;
+  list->total_size += node->str.size;
+  return node;
+}
+
+Str8Node *str8_list_push_node_set_string(Str8List *list, Str8Node *node, Str8 str) {
+  sll_queue_push(list->first, list->last, node);
+  list->node_count += 1;
+  list->total_size += str.size;
+  node->str = str;
+  return node;
+}
+
+Str8Node *str8_list_push_node_front(Str8List *list, Str8Node *node) {
+  sll_queue_push_front(list->first, list->last, node);
+  list->node_count += 1;
+  list->total_size += node->str.size;
+  return node;
+}
+
+Str8Node *str8_list_push_node_front_set_string(Str8List *list, Str8Node *node,
+                                               Str8 string) {
+  sll_queue_push_front(list->first, list->last, node);
+  list->node_count += 1;
+  list->total_size += string.size;
+  node->str = string;
+  return node;
+}
+
+Str8Node *str8_list_push(Arena *arena, Str8List *list, Str8 str) {
+  Str8Node *node = push_array_no_zero(arena, Str8Node, 1);
+  return str8_list_push_node_set_string(list, node, str);
+}
+
+Str8Node *str8_list_push_front(Arena *arena, Str8List *list, Str8 str) {
+  Str8Node *node = push_array_no_zero(arena, Str8Node, 1);
+  return str8_list_push_node_front_set_string(list, node, str);
+}
+
+void str8_list_concat_in_place(Str8List *list, Str8List *to_push) {
+  if (to_push->node_count == 0) {
+    return;
+  }
+  if (list->last) {
+    list->node_count += to_push->node_count;
+    list->total_size += to_push->total_size;
+    list->last->next = to_push->first;
+    list->last = to_push->last;
+  } else {
+    *list = *to_push;
+  }
+  memset(to_push, 0, sizeof(*to_push));
+}
+
+Str8Node *str8_list_pushf(Arena *arena, Str8List *list, char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  Str8 str = str8fv(arena, fmt, args);
+  Str8Node *node = str8_list_push_front(arena, list, str);
+  va_end(args);
+  return node;
+}
+
+Str8Node *str8_list_push_frontf(Arena *arena, Str8List *list, char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  Str8 str = str8fv(arena, fmt, args);
+  Str8Node *node = str8_list_push_front(arena, list, str);
+  va_end(args);
+  return node;
+}
+
+Str8Node *str8_list_pop_front(Str8List *list) {
+  Str8Node *node = 0;
+  if (list->node_count == 0) {
+    return node;
+  }
+
+  node = list->first;
+  assert(list->total_size >= list->first->str.size);
+  list->node_count -= 1;
+  list->total_size -= list->first->str.size;
+  sll_queue_pop(list->first, list->last);
+  return node;
+}
+
+Str8List str8_list_copy(Arena *arena, Str8List *list) {
+  Str8List result = {0};
+  for (Str8Node *node = list->first; node != 0; node = node->next) {
+    Str8Node *new_node = push_array_no_zero(arena, Str8Node, 1);
+    Str8 new_str = str8_copy(arena, node->str);
+    str8_list_push_node_set_string(list, new_node, new_str);
+  }
+  return result;
+}
+
+Str8List str8_list_substr(Arena *arena, Str8List list, u64 min, u64 max) {
+  Str8List result = {0};
+  Str8Node *n = list.first;
+
+  u64 front_min = 0;
+  u64 cursor = 0;
+  for (; n != 0; cursor += n->str.size, n = n->next) {
+    if (cursor + n->str.size > min) {
+      front_min = min - cursor;
+      break;
+    }
+  }
+
+  u64 range_sz = max > min ? max - min : 0;
+  if (front_min > 0) {
+    u64 front_max = front_min + min(range_sz, n->str.size);
+    str8_list_push(arena, &result, str8_substr(n->str, front_min, front_max));
+    n = n->next;
+  }
+
+  for (; n != 0; n = n->next) {
+    if (result.total_size >= range_sz) {
+      break;
+    }
+    u64 copy_max = range_sz - result.total_size;
+    u64 copy_sz = min(copy_max, n->str.size);
+    str8_list_push(arena, &result, str8_substr(n->str, 0, copy_sz));
+  }
+
+  return result;
+}
+
+// split & join
+Str8List str8_split(Arena *arena, Str8 str, u8 *split_chars, u64 split_char_count,
+                    StringSplitFlags flags) {
+  Str8List list = {0};
+  bool keep_empties = (flags & StringSplitFlag_KeepEmpties);
+  u8 *ptr = str.str;
+  u8 *opl = str.str + str.size;
+  for (; ptr < opl;) {
+    u8 *first = ptr;
+    for (; ptr < opl; ptr += 1) {
+      u8 c = *ptr;
+      bool is_split = false;
+      for (u64 i = 0; i < split_char_count; i += 1) {
+        if (split_chars[i] == c) {
+          is_split = true;
+          break;
+        }
+      }
+      if (is_split) {
+        break;
+      }
+    }
+    Str8 string = str8_range(first, ptr);
+    if (keep_empties || string.size > 0) {
+      str8_list_push(arena, &list, string);
+    }
+    ptr += 1;
+  }
+  return list;
+}
+
+Str8List str8_split_by_string_chars(Arena *arena, Str8 str, Str8 split_chars,
+                                    StringSplitFlags flags) {
+  Str8List list = str8_split(arena, str, split_chars.str, split_chars.size, flags);
+  return list;
+}
+
+Str8 str8_list_join(Arena *arena, Str8List *list, StringJoin *optional_params) {
+  StringJoin join = {0};
+  if (optional_params != 0) {
+    memmove(&join, optional_params, sizeof(*optional_params));
+  }
+  u64 sep_count = 0;
+  if (list->node_count > 0) {
+    sep_count = list->node_count - 1;
+  }
+
+  Str8 result;
+  result.size =
+      join.pre.size + join.post.size + sep_count * join.sep.size + list->total_size;
+  u8 *ptr = result.str = push_array_no_zero(arena, u8, result.size + 1);
+  memmove(ptr, join.pre.str, join.pre.size);
+  ptr += join.pre.size;
+  for (Str8Node *node = list->first; node != 0; node = node->next) {
+    memmove(ptr, node->str.str, node->str.size);
+    ptr += node->str.size;
+    if (node->next != 0) {
+      memmove(ptr, join.sep.str, join.sep.size);
+      ptr += join.sep.size;
+    }
+  }
+  memmove(ptr, join.post.str, join.post.size);
+  ptr += join.post.size;
+  *ptr = 0;
   return result;
 }

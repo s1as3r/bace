@@ -29,8 +29,7 @@ void release_memory(void *ptr, u64 size) {
 }
 
 void *reserve_memory_large(u64 size) {
-  void *res = mmap(0, size, PROT_NONE,
-                   MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
+  void *res = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
   if (res == MAP_FAILED) {
     res = 0;
   }

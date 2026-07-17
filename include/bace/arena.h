@@ -11,7 +11,7 @@ enum {
   ArenaFlag_LargePages = (1 << 1),
 };
 
-typedef struct {
+typedef struct ArenaParams {
   ArenaFlags flags;
   u64 reserve_size;
   u64 commit_size;
@@ -42,7 +42,7 @@ struct Arena {
 
 static_assert(sizeof(Arena) <= ARENA_HEADER_SIZE, "arena header size check");
 
-typedef struct {
+typedef struct Temp {
   Arena *arena;
   u64 pos;
 } Temp;
@@ -53,12 +53,12 @@ global ArenaFlags g_arena_default_flags = 0;
 
 // creation/destruction
 Arena *arena_alloc_(ArenaParams *params);
-#define arena_alloc(...)                                                       \
-  arena_alloc_(&(ArenaParams){.reserve_size = g_arena_default_reserve_size,    \
-                              .commit_size = g_arena_default_commit_size,      \
-                              .flags = g_arena_default_flags,                  \
-                              .allocation_site_file = __FILE__,                \
-                              .allocation_site_line = __LINE__,                \
+#define arena_alloc(...)                                                                 \
+  arena_alloc_(&(ArenaParams){.reserve_size = g_arena_default_reserve_size,              \
+                              .commit_size = g_arena_default_commit_size,                \
+                              .flags = g_arena_default_flags,                            \
+                              .allocation_site_file = __FILE__,                          \
+                              .allocation_site_line = __LINE__,                          \
                               __VA_ARGS__})
 void arena_release(Arena *arena);
 
@@ -73,11 +73,11 @@ void arena_pop(Arena *arena, u64 amt);
 Temp temp_begin(Arena *arena);
 void temp_end(Temp temp);
 
-#define push_array_no_zero_aligned(a, T, c, align)                             \
+#define push_array_no_zero_aligned(a, T, c, align)                                       \
   (T *)arena_push((a), sizeof(T) * (c), (align), (false))
-#define push_array_aligned(a, T, c, align)                                     \
+#define push_array_aligned(a, T, c, align)                                               \
   (T *)arena_push((a), sizeof(T) * (c), (align), (true))
-#define push_array_no_zero(a, T, c)                                            \
+#define push_array_no_zero(a, T, c)                                                      \
   push_array_no_zero_aligned(a, T, c, max(8, alignof(T)))
 #define push_array(a, T, c) push_array_aligned(a, T, c, max(8, alignof(T)))
 

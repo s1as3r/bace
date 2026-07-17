@@ -64,15 +64,13 @@ void *arena_push(Arena *arena, u64 size, u64 align, bool zero) {
       res_size = align_pow_2(size + ARENA_HEADER_SIZE, align);
       cmt_size = align_pow_2(size + ARENA_HEADER_SIZE, align);
     }
-    Arena *new_block =
-        arena_alloc(.reserve_size = res_size, .commit_size = cmt_size,
-                    .flags = curr->flags,
-                    .allocation_site_file = curr->allocation_site_file,
-                    .allocation_site_line = curr->allocation_site_line);
+    Arena *new_block = arena_alloc(.reserve_size = res_size, .commit_size = cmt_size,
+                                   .flags = curr->flags,
+                                   .allocation_site_file = curr->allocation_site_file,
+                                   .allocation_site_line = curr->allocation_site_line);
 
     new_block->base_pos = curr->base_pos + curr->res;
-    new_block->prev = arena->current;
-    arena->current = new_block;
+    sll_stack_push_n(arena->current, new_block, prev);
 
     curr = new_block;
     pos_pre = align_pow_2(curr->pos, align);
