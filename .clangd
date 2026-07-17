@@ -1,0 +1,11 @@
+CompileFlags:
+  Add: [
+    "-xc",
+    "-Wall",
+    "-I/home/slas3r/dev/bace/include",
+    "-I/home/slas3r/dev/bace/external/acutest/include",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wno-initializer-overrides"
+  ]
