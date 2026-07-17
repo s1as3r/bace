@@ -37,8 +37,6 @@
 
 #define align_pow_2(x, b) (((x) + (b) - 1) & (~((b) - 1)))
 
-#define memory_zero(s, z) memset((s), 0, (z));
-
 // clang-format off
 #define KB(val) ((val)   * 1024LL)
 #define MB(val) (KB(val) * 1024LL)

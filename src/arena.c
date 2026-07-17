@@ -13,15 +13,11 @@ Arena *arena_alloc_(ArenaParams *params) {
     if (params->flags & ArenaFlag_LargePages) {
       res_size = align_pow_2(res_size, sys_info.large_page_size);
       cmt_size = align_pow_2(cmt_size, sys_info.large_page_size);
-    } else {
-      res_size = align_pow_2(res_size, sys_info.page_size);
-      cmt_size = align_pow_2(cmt_size, sys_info.page_size);
-    }
-
-    if (params->flags & ArenaFlag_LargePages) {
       base = reserve_memory_large(res_size);
       commit_memory_large(base, cmt_size);
     } else {
+      res_size = align_pow_2(res_size, sys_info.page_size);
+      cmt_size = align_pow_2(cmt_size, sys_info.page_size);
       base = reserve_memory(res_size);
       commit_memory(base, cmt_size);
     }
@@ -51,7 +47,6 @@ void arena_release(Arena *arena) {
 }
 
 void *arena_push(Arena *arena, u64 size, u64 align, bool zero) {
-  (void)zero; // newly allocated arenas have zeroed commited pages
   Arena *curr = arena->current;
   u64 pos_pre = align_pow_2(curr->pos, align);
   u64 pos_pst = pos_pre + size;
@@ -97,7 +92,9 @@ void *arena_push(Arena *arena, u64 size, u64 align, bool zero) {
   if (curr->cmt >= pos_pst) {
     result = (u8 *)curr + pos_pre;
     curr->pos = pos_pst;
-    memory_zero(result, size);
+    if (zero) {
+      memset(result, 0, size);
+    }
   }
 
   return result;
@@ -144,6 +141,5 @@ Temp temp_begin(Arena *arena) {
 }
 
 void temp_end(Temp temp) {
-  //
   arena_pop_to(temp.arena, temp.pos);
 }
