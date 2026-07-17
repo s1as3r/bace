@@ -448,7 +448,7 @@ Str8Node *str8_list_pushf(Arena *arena, Str8List *list, char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
   Str8 str = str8fv(arena, fmt, args);
-  Str8Node *node = str8_list_push_front(arena, list, str);
+  Str8Node *node = str8_list_push(arena, list, str);
   va_end(args);
   return node;
 }
@@ -457,7 +457,7 @@ Str8Node *str8_list_push_frontf(Arena *arena, Str8List *list, char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
   Str8 str = str8fv(arena, fmt, args);
-  Str8Node *node = str8_list_push_front(arena, list, str);
+  Str8Node *node = str8_list_push(arena, list, str);
   va_end(args);
   return node;
 }
