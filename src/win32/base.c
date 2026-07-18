@@ -1,5 +1,6 @@
 #include "bace/win32/base.h"
 #include "bace/arena.h"
+#include "bace/base_os.h"
 #include "bace/thread_context.h"
 
 global Win32State win32_state = {0};
@@ -61,4 +62,22 @@ void init_win32_state(void) {
 
 SystemInfo *get_system_info(void) {
   return &win32_state.sys_info;
+}
+
+// dy lib stuff
+DyLib lib_open(Str8 path) {
+  HMODULE mod = LoadLibraryA((LPCSTR)path.str);
+  DyLib result = {(u64)mod};
+  return result;
+}
+
+void lib_close(DyLib lib) {
+  HMODULE mod = (HMODULE)lib.handle;
+  FreeLibrary(mod);
+}
+
+VoidProc *lib_load_proc(DyLib lib, Str8 name) {
+  HMODULE mod = (HMODULE)lib.handle;
+  VoidProc *result = (VoidProc *)GetProcAddress(mod, (LPCSTR)name.str);
+  return result;
 }
