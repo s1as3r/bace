@@ -1,8 +1,10 @@
+#include "bace/base.h"
 #include "bace/thread_context.h"
 #include "bace/linux/base.h"
 
 #include <unistd.h>
 #include <string.h>
+#include <dlfcn.h>
 
 global LinuxState linux_state = {0};
 
@@ -80,4 +82,22 @@ void init_linux_state(void) {
 
 SystemInfo *get_system_info(void) {
   return &linux_state.sys_info;
+}
+
+// dy lib stuff
+DyLib lib_open(Str8 path) {
+  void *so = dlopen((char *)path.str, RTLD_LAZY | RTLD_LOCAL);
+  DyLib result = {(u64)so};
+  return result;
+}
+
+void lib_close(DyLib lib) {
+  void *so = (void *)lib.handle;
+  dlclose(so);
+}
+
+VoidProc *lib_load_proc(DyLib lib, Str8 name) {
+  void *so = (void *)lib.handle;
+  VoidProc *proc = (VoidProc *)dlsym(so, (char *)name.str);
+  return proc;
 }
