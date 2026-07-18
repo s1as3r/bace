@@ -74,22 +74,21 @@ if [[ ! -f "$BACE_LIB" || $build_bace == "true" ]]; then
 fi
 
 cd "$BUILD_PATH" || exit
-for file in "$TESTS/*.c"; do
+for file in "$TESTS/"*.c; do
     fname=$(basename $file)
     exe_name="$EXE_PREFIX${fname%.*}"
     exe_cmd=("$CC" "${DEFINES[@]}" "${DEBUG[@]}" "${COMP_FLAGS[@]}" \
-    "-o" "$exe_name" "$TESTS/$fname" "${LIBS[@]}")
+    "-o" "$exe_name" "$file" "${LIBS[@]}")
 
     exe_cmd_str=$(IFS=' '; echo "${exe_cmd[*]}")
     echo "===== $exe_name ====="
     if [[ $no_build == "false" ]]; then
         echo "$exe_cmd_str"
         if ! $(eval "$exe_cmd_str"); then
-            echo "failed building $exe_name "
+            echo "failed building $exe_name"
         fi
     fi
     if [[ $no_run == "false" ]]; then
-        echo ""
         "./$exe_name"
     fi
 done
