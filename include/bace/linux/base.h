@@ -13,7 +13,6 @@ typedef struct LinuxState {
   SystemInfo sys_info;
 } LinuxState;
 
-global LinuxState linux_state = {0};
 void init_linux_state(void);
 
 #endif // !_H_LINUX_BASE

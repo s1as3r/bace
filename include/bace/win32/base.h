@@ -13,7 +13,6 @@ typedef struct Win32State {
   SystemInfo sys_info;
 } Win32State;
 
-global Win32State win32_state = {0};
 void init_win32_state(void);
 
 #endif // !_H_WIN32_BASE

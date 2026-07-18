@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <string.h>
 
+global LinuxState linux_state = {0};
+
 void *reserve_memory(u64 size) {
   void *res = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   if (res == MAP_FAILED) {

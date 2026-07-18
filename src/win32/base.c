@@ -2,6 +2,8 @@
 #include "bace/arena.h"
 #include "bace/thread_context.h"
 
+global Win32State win32_state = {0};
+
 void *reserve_memory(u64 size) {
   void *result = VirtualAlloc(0, size, MEM_RESERVE, PAGE_READWRITE);
   return result;
