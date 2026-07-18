@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <assert.h>
 #include <stdalign.h>
-#include <string.h>
 
 #if defined(_WIN32)
 #define OS_WINDOWS 1
@@ -28,6 +27,7 @@
 #define local_persist static
 
 #define PI32 3.1415926536f
+#define PI64 3.1415926536
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))

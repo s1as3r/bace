@@ -1,5 +1,5 @@
-#ifndef _H_BACE_STRINGS
-#define _H_BACE_STRINGS
+#ifndef _H_STRINGS
+#define _H_STRINGS
 
 #include "arena.h"
 #include "base.h"
@@ -134,4 +134,4 @@ Str8List str8_split_by_string_chars(Arena *arena, Str8 string, Str8 split_chars,
                                     StringSplitFlags flags);
 Str8 str8_list_join(Arena *arena, Str8List *list, StringJoin *optional_params);
 
-#endif // !_H_BACE_STRINGS
+#endif // !_H_STRINGS
