@@ -14,8 +14,8 @@ TCTX *tctx_alloc(void) {
 }
 
 void tctx_release(TCTX *tctx) {
-  arena_release(tctx->arenas[0]);
   arena_release(tctx->arenas[1]);
+  arena_release(tctx->arenas[0]);
 }
 
 void tctx_select(TCTX *tctx) {
