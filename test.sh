@@ -84,7 +84,7 @@ for file in "$TESTS/"*.c; do
     echo "===== $exe_name ====="
     if [[ $no_build == "false" ]]; then
         echo "$exe_cmd_str"
-        if ! $(eval "$exe_cmd_str"); then
+        if ! "${exe_cmd[@]}"; then
             echo "failed building $exe_name"
         fi
     fi

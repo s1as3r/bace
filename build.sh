@@ -52,5 +52,5 @@ fi
 cd "$BUILD_PATH" || exit
 echo "===== $OBJ_NAME ====="
 echo "$OBJ_CMD_STR"
-eval "$OBJ_CMD_STR"
+"${OBJ_CMD[@]}"
 cd ..
