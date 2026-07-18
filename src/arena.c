@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "bace/base.h"
 #include "bace/arena.h"
 #include "bace/base_os.h"
