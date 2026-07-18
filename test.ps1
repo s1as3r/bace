@@ -55,10 +55,18 @@ if (-not (Test-Path $BuildPath)) {
 
 if ((-not (Test-Path $BaceLib)) -or $BuildBaceFlag) {
     Write-Output "=== building bace ==="
+
+    $old_bpath = $env:BUILD_PATH
     $env:BUILD_PATH = $BuildPath
-    & $BaceBuildPs1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Output "building bace failed"
+    try {
+        & $BaceBuildPs1
+        $baceExitCode = $LASTEXITCODE
+    } finally {
+        $env:BUILD_PATH = $old_bpath
+    }
+
+    if ($baceExitCode -ne 0) {
+        Write-Host "building bace failed"
         exit 1
     }
 }
