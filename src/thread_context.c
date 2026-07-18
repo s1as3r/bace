@@ -26,6 +26,25 @@ TCTX *tctx_selected(void) {
   return tctx_thread_local;
 }
 
+i32 thread_entry_point(void *ptr) {
+  ThreadEntity *entity = (ThreadEntity *)ptr;
+
+  TCTX *tctx = tctx_alloc();
+  tctx_select(tctx);
+
+  i32 result = entity->fn(entity->data);
+  tctx_release(tctx);
+  return result;
+}
+
+i32 thread_launch_with_ctx(Arena *arena, thrd_t *thread, thrd_start_t fn, void *data) {
+  ThreadEntity *entity = push_array_no_zero(arena, ThreadEntity, 1);
+  entity->fn = fn;
+  entity->data = data;
+
+  return thrd_create(thread, thread_entry_point, (void *)entity);
+}
+
 Arena *tctx_get_scratch(Arena **conflicts, u64 count) {
   TCTX *tctx = tctx_selected();
   Arena *result = 0;

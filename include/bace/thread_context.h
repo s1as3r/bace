@@ -1,7 +1,7 @@
 #ifndef _H_THREAD_CONTEXT
 #define _H_THREAD_CONTEXT
 
-#include <threads.h>
+#include <threads.h> // IWYU pragma: export
 
 #include "base.h"
 #include "arena.h"
@@ -26,5 +26,18 @@ TCTX *tctx_selected(void);
 Arena *tctx_get_scratch(Arena **conflicts, u64 count);
 #define scratch_begin(conflicts, count) temp_begin(tctx_get_scratch((conflicts), (count)))
 #define scratch_end(scratch) temp_end(scratch);
+
+// launching threads with proper tctx
+// using c11 threads to keep things simple
+typedef struct ThreadEntity {
+  thrd_start_t fn;
+  void *data;
+} ThreadEntity;
+
+i32 thread_entry_point(void *ptr);
+
+// the arena is used to allocate ThreadEntity
+// it should outlive the startup of `thread_entry_point`
+i32 thread_launch_with_ctx(Arena *arena, thrd_t *thread, thrd_start_t fn, void *data);
 
 #endif // !_H_THREAD_CONTEXT
