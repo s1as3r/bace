@@ -47,16 +47,16 @@ typedef struct Temp {
   u64 pos;
 } Temp;
 
-global u64 g_arena_default_reserve_size = MB(64);
-global u64 g_arena_default_commit_size = KB(64);
-global ArenaFlags g_arena_default_flags = 0;
+#define ARENA_DEFAULT_RESERVE_SIZE MB(64)
+#define ARENA_DEFAULT_COMMIT_SIZE KB(64)
+#define ARENA_DEFAULT_FLAGS 0
 
 // creation/destruction
 Arena *arena_alloc_(ArenaParams *params);
 #define arena_alloc(...)                                                                 \
-  arena_alloc_(&(ArenaParams){.reserve_size = g_arena_default_reserve_size,              \
-                              .commit_size = g_arena_default_commit_size,                \
-                              .flags = g_arena_default_flags,                            \
+  arena_alloc_(&(ArenaParams){.reserve_size = ARENA_DEFAULT_RESERVE_SIZE,                \
+                              .commit_size = ARENA_DEFAULT_COMMIT_SIZE,                  \
+                              .flags = ARENA_DEFAULT_FLAGS,                              \
                               .allocation_site_file = __FILE__,                          \
                               .allocation_site_line = __LINE__,                          \
                               __VA_ARGS__})
