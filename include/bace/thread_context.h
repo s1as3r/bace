@@ -29,15 +29,20 @@ Arena *tctx_get_scratch(Arena **conflicts, u64 count);
 
 // launching threads with proper tctx
 // using c11 threads to keep things simple
-typedef struct ThreadEntity {
+typedef struct ThreadEntity ThreadEntity;
+struct ThreadEntity {
+  ThreadEntity *next; // free-list link when unused
   thrd_start_t fn;
   void *data;
-} ThreadEntity;
+};
+
+typedef struct ThreadEntityPool {
+  Arena *arena;
+  ThreadEntity *free_list;
+  mtx_t mutex;
+} ThreadEntityPool;
 
 i32 thread_entry_point(void *ptr);
-
-// the arena is used to allocate ThreadEntity
-// it should outlive the startup of `thread_entry_point`
-i32 thread_launch_with_ctx(Arena *arena, thrd_t *thread, thrd_start_t fn, void *data);
+i32 thread_launch_with_ctx(thrd_t *thread, thrd_start_t fn, void *data);
 
 #endif // !_H_THREAD_CONTEXT

@@ -15,6 +15,8 @@ typedef struct SystemInfo {
 
 SystemInfo *get_system_info(void);
 
+void bace_os_state_init(void);
+
 // memory stuff
 void *reserve_memory(u64 size);
 bool commit_memory(void *ptr, u64 size);

@@ -1,4 +1,5 @@
 #include "bace/base.h"
+#include "bace/base_os.h"
 #include "bace/thread_context.h"
 #include "bace/linux/base.h"
 
@@ -82,6 +83,10 @@ void init_linux_state(void) {
 
 SystemInfo *get_system_info(void) {
   return &linux_state.sys_info;
+}
+
+void bace_os_state_init(void) {
+  init_linux_state();
 }
 
 // dy lib stuff

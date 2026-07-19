@@ -60,6 +60,10 @@ void init_win32_state(void) {
   }
 }
 
+void bace_os_state_init(void) {
+  init_win32_state();
+}
+
 SystemInfo *get_system_info(void) {
   return &win32_state.sys_info;
 }

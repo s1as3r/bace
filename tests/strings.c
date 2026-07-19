@@ -2,15 +2,7 @@
 #include "bace/bace.h"
 #include "bace/thread_context.h"
 
-void init_state(void) {
-#if OS_LINUX
-  init_linux_state();
-#elif OS_WINDOWS
-  init_win32_state();
-#endif
-}
-
-#define TEST_INIT init_state()
+#define TEST_INIT bace_os_state_init()
 #include "acutest.h"
 
 void test_str8_list_substr(void) {

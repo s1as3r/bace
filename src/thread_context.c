@@ -1,6 +1,11 @@
 #include "bace/thread_context.h"
+#include "bace/arena.h"
+#include <threads.h>
 
 thread_local TCTX *tctx_thread_local;
+
+global once_flag g_thread_entity_pool_init_flag = ONCE_FLAG_INIT;
+global ThreadEntityPool g_thread_entity_pool;
 
 TCTX *tctx_alloc(void) {
   Arena *arena_0 = arena_alloc();
@@ -26,19 +31,50 @@ TCTX *tctx_selected(void) {
   return tctx_thread_local;
 }
 
+void thread_entity_pool_init(void) {
+  // yes this is leaked ig
+  g_thread_entity_pool.arena = arena_alloc();
+  g_thread_entity_pool.free_list = 0;
+  mtx_init(&g_thread_entity_pool.mutex, mtx_plain);
+}
+
+ThreadEntity *thread_entity_alloc(void) {
+  call_once(&g_thread_entity_pool_init_flag, thread_entity_pool_init);
+
+  mtx_lock(&g_thread_entity_pool.mutex);
+  ThreadEntity *entity = g_thread_entity_pool.free_list;
+  if (entity) {
+    sll_stack_pop(g_thread_entity_pool.free_list);
+  } else {
+    entity = push_array_no_zero(g_thread_entity_pool.arena, ThreadEntity, 1);
+  }
+  mtx_unlock(&g_thread_entity_pool.mutex);
+  return entity;
+}
+
+void thread_entity_release(ThreadEntity *entity) {
+  mtx_lock(&g_thread_entity_pool.mutex);
+  sll_stack_push(g_thread_entity_pool.free_list, entity);
+  mtx_unlock(&g_thread_entity_pool.mutex);
+}
+
 i32 thread_entry_point(void *ptr) {
   ThreadEntity *entity = (ThreadEntity *)ptr;
+
+  thrd_start_t fn = entity->fn;
+  void *data = entity->data;
+  thread_entity_release(entity);
 
   TCTX *tctx = tctx_alloc();
   tctx_select(tctx);
 
-  i32 result = entity->fn(entity->data);
+  i32 result = fn(data);
   tctx_release(tctx);
   return result;
 }
 
-i32 thread_launch_with_ctx(Arena *arena, thrd_t *thread, thrd_start_t fn, void *data) {
-  ThreadEntity *entity = push_array_no_zero(arena, ThreadEntity, 1);
+i32 thread_launch_with_ctx(thrd_t *thread, thrd_start_t fn, void *data) {
+  ThreadEntity *entity = thread_entity_alloc();
   entity->fn = fn;
   entity->data = data;
 
