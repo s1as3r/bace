@@ -1,3 +1,10 @@
+// bace.h
+//
+// including this single file pulls in the whole library.
+// convenience header for code that uses most of the library.
+// lower-level modules that only need one piece should prefer including that
+// module's header directly.
+
 #ifndef _H_BACE
 #define _H_BACE
 

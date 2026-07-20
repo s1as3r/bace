@@ -1,3 +1,11 @@
+// base.h
+//
+// foundational definitions used by every other header in
+// this codebase: fixed-width type aliases, os/compiler detection macros,
+// small numeric helpers, and a family of linked-list macros.
+//
+// nothing in this file allocates memory or has any runtime state.
+
 #ifndef _H_BASE_DEFS
 #define _H_BASE_DEFS
 
@@ -6,6 +14,9 @@
 #include <assert.h>
 #include <stdalign.h>
 
+// os detection
+//
+// code that needs to branch on platform should use `#if OS_LINUX` etc.
 #if defined(_WIN32)
 #define OS_WINDOWS 1
 #elif defined(__gnu__linux) || defined(__linux__)
@@ -14,38 +25,44 @@
 #define OS_MAC 1
 #endif
 
+// compiler detection
 #if defined(__clang__)
 #define COMPILER_CLANG 1
 #elif defined(__MSC_VER)
-#define COMPILER_MSVC
+#define COMPILER_MSVC 1
 #elif defined(__GNUC__) || defined(__GNUG__)
-#define COMPILER_GCC
+#define COMPILER_GCC 1
 #endif
 
-#define global static
-#define internal static
-#define local_persist static
+// storage class aliases used for self-documentation
+#define global static        // global variables provate to the translation unit
+#define internal static      // functions private to the tranlation unit
+#define local_persist static // function-local static
 
 #define PI32 3.1415926536f
 #define PI64 3.1415926536
 
+// simple min/max/clamp macros
+// arguments may be evaluated more than once, avoid passing expressions with side effects
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define clamp(x, a, b) (((x) < (a)) ? (a) : ((x) > (b)) ? (b) : (x))
 
 #define array_count(arr) (sizeof(arr) / sizeof(arr[0]))
 
+// rounds `x` to the next multiple of `b`.
+// `b` must be a power of two.
 #define align_pow_2(x, b) (((x) + (b) - 1) & (~((b) - 1)))
 
+// generic function type used for loading arbitrary symbols out of dynamic libraries
 typedef void VoidProc(void);
 
-// clang-format off
-#define KB(val) ((val)   * 1024LL)
+#define KB(val) ((val)   * 1024LL) // cf-off
 #define MB(val) (KB(val) * 1024LL)
 #define GB(val) (MB(val) * 1024LL)
 #define TB(val) (GB(val) * 1024LL)
-// clang-format on
 
+// fixed-width integer type aliases
 typedef int8_t i8;
 typedef int16_t i16;
 typedef int32_t i32;
@@ -60,7 +77,22 @@ typedef uint64_t usize;
 typedef float f32;
 typedef double f64;
 
-// linked list stuff
+// linked-list macros
+//
+// these macros implement doubly-linked lists, singly-linked queues, and
+// singly-linked stacks directly on top of user-defined node structs, with
+// no separate allocation for list bookkeeping.
+// the caller owns node memory (typically arena-allocated) and is responsible
+// for its lifetime.
+// these macros only rewire pointers.
+//
+// naming convention:
+//   f, l    -- first/last pointers of the list
+//   p       -- position node to insert relative to
+//   n       -- the node being inserted or removed
+//   next    -- name of the "next" pointer field on the node type
+//   prev    -- name of the "prev" pointer field on the node type (dll only)
+//   nil     -- the sentinel value used to represent "no node" (usually 0)
 #define _check_nil(nil, p) ((p) == 0 || (p) == nil)
 #define _set_nil(nil, p) ((p) = nil)
 
