@@ -2,6 +2,7 @@
 #include "bace/strings.h"
 #include "bace/arena.h"
 
+#include <string.h>
 #include <stdio.h>
 
 // clang-format off
@@ -32,7 +33,7 @@ bool char_is_lower(u8 c) {
 }
 
 bool char_is_alpha(u8 c) {
-  return char_is_lower(c) || char_is_lower(c);
+  return (char_is_lower(c) || char_is_lower(c));
 }
 
 bool char_is_digit(u8 c, u32 base) {
@@ -72,14 +73,14 @@ u8 char_simplify_slash(u8 c) {
   return c;
 }
 
-u64 cstring8_length(const u8 *c) {
+u64 cstring8_length(const u8 *str) {
   u64 len = 0;
-  if (!c) {
+  if (!str) {
     return len;
   }
-  u8 *p = (u8 *)c;
+  u8 *p = (u8 *)str;
   for (; *p != 0; p += 1);
-  len = (u64)(p - c);
+  len = (u64)(p - str);
   return len;
 }
 
@@ -478,7 +479,7 @@ Str8List str8_list_copy(Arena *arena, Str8List *list) {
   for (Str8Node *node = list->first; node != 0; node = node->next) {
     Str8Node *new_node = push_array_no_zero(arena, Str8Node, 1);
     Str8 new_str = str8_copy(arena, node->str);
-    str8_list_push_node_set_string(list, new_node, new_str);
+    str8_list_push_node_set_string(&result, new_node, new_str);
   }
   return result;
 }

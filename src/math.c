@@ -511,11 +511,11 @@ Mat4x4f32 make_look_at_4x4f32(Vec3f32 eye, Vec3f32 center, Vec3f32 up) {
   return result;
 }
 
-Mat4x4f32 make_rotate_4x4f32(Vec3f32 axis, f32 turns) {
+Mat4x4f32 make_rotate_4x4f32(Vec3f32 axis, f32 rad) {
   Mat4x4f32 result = mat_4x4f32(1.f);
   axis = normalize_3f32(axis);
-  f32 sin_theta = sinf(turns);
-  f32 cos_theta = cosf(turns);
+  f32 sin_theta = sinf(rad);
+  f32 cos_theta = cosf(rad);
   f32 cos_value = 1.f - cos_theta;
   result.v[0][0] = (axis.x * axis.x * cos_value) + cos_theta;
   result.v[0][1] = (axis.x * axis.y * cos_value) + (axis.z * sin_theta);

@@ -128,11 +128,9 @@ void arena_clear(Arena *arena) {
 }
 
 void arena_pop(Arena *arena, u64 amt) {
-  u64 pos_old = arena_pos(arena);
-  u64 pos_new = pos_old;
-  if (amt < pos_old) {
-    pos_new = pos_old - amt;
-  }
+  u64 pos = arena_pos(arena);
+  amt = clamp(amt, 0, pos);
+  u64 pos_new = pos - amt;
   arena_pop_to(arena, pos_new);
 }
 
