@@ -27,8 +27,9 @@
 #include "bace/base.h"
 
 // size, in bytes, reserved at the front of every arena block for the
-// Arena header itself. the header is placed inline at the start of the block's
-// reserved memory , ahead of the region handed out to callers.
+// Arena header itself.
+// the header is placed inline at the start of the block's
+// reserved memory, ahead of the region handed out to callers.
 #define ARENA_HEADER_SIZE 128
 
 typedef u64 ArenaFlags;
@@ -39,8 +40,7 @@ enum {
   // (e.g. backed by `optional_backing_buffer`).
   ArenaFlag_NoChain = (1 << 0),
   // request the os large-page mechanism for this arena's reservation,
-  // trading flexibility (must be sized/aligned to the large page size) for
-  // reduced TLB pressure.
+  // trading flexibility for reduced TLB pressure.
   ArenaFlag_LargePages = (1 << 1),
 };
 
@@ -64,7 +64,7 @@ typedef struct ArenaParams {
   // the buffer must outlive the arena.
   void *optional_backing_buffer;
   // debug/diagnostic info identifying where this arena was created.
-  // normally filled in automatically by the arena_alloc() macro via __FILE__/__LINE__.
+  // normally filled in automatically by the `arena_alloc` macro via __FILE__/__LINE__.
   char *allocation_site_file;
   int allocation_site_line;
   // optional name for debugging/tooling.

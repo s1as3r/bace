@@ -61,7 +61,7 @@ void release_memory(void *ptr, u64 size);
 
 // like `reserve_memory`, but requests the reservation using the platform's
 // large/huge page mechanism.
-// returns null on failure, including when the privilege/support is unavailable.
+// returns `null` on failure.
 void *reserve_memory_large(u64 size);
 
 // commits memory within a large-page reservation made via `reserve_memory_large`.

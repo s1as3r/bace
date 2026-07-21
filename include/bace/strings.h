@@ -95,6 +95,7 @@ Str8 str8_to_lower(Arena *arena, Str8 string);
 Str8 str8_cat(Arena *arena, Str8 s1, Str8 s2);
 
 // returns a copy of `s`
+// the returned string is null terminated.
 Str8 str8_copy(Arena *arena, Str8 s);
 
 // `printf`-style formatting into an arena-allocated `Str8`
@@ -104,7 +105,6 @@ Str8 str8fv(Arena *arena, const char *fmt, va_list args);
 Str8 str8f(Arena *arena, char *fmt, ...);
 
 // slicing
-
 // returns the sub-range [min, max) of `str`
 // (byte offsets, not clamped to character boundaries for multi-byte UTF-8).
 Str8 str8_substr(Str8 str, u64 min, u64 max);

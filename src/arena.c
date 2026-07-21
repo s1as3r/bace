@@ -54,7 +54,7 @@ void *arena_push(Arena *arena, u64 size, u64 align, bool zero) {
   u64 pos_pst = pos_pre + size;
 
   // chain, if needed
-  if (curr->res < pos_pst && !(arena->flags & ArenaFlag_NoChain)) {
+  if ((curr->res < pos_pst) && !(arena->flags & ArenaFlag_NoChain)) {
     u64 res_size = curr->res_size;
     u64 cmt_size = curr->cmt_size;
     if (size + ARENA_HEADER_SIZE > res_size) {
