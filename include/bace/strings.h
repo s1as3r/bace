@@ -191,13 +191,6 @@ typedef struct Str8List {
   u64 total_size;
 } Str8List;
 
-// flat array of `count` strings backed by storage `v` of `size` elements
-typedef struct Str8Array {
-  Str8 *v;
-  u64 size;
-  u64 count;
-} Str8Array;
-
 // node-based list operations. caller allocates/owns `node` and these functions
 // just link it in.
 // prefer the allocating `str8_list_push*` variants below unless you specifically
@@ -239,6 +232,38 @@ Str8List str8_list_copy(Arena *arena, Str8List *list);
 Str8List str8_list_substr(Arena *arena, Str8List list, u64 min, u64 max);
 
 #define str8_list_first(list) ((list)->first ? (list)->first->string : str8_zero())
+
+// flat array of `count` strings backed by storage `v` of `size` elements
+typedef struct Str8Array {
+  Str8 *v;
+  u64 size;
+  u64 count;
+} Str8Array;
+
+// teturns an empty `Str8Array`.
+Str8Array str8_array_zero(void);
+
+// builds a new `Str8Array` out of `arena`, with one entry per node of
+// `list`, in list order (`count == size == list->node_count`).
+// does NOT copy string contents. each resulting `Str8` aliases the same backing
+// memory as the corresponding list node's string, which must remain valid
+// for as long as the array is used.
+// use `str8_array_copy_from_list` if an independent copy is needed.
+Str8Array str8_array_from_list(Arena *arena, Str8List *list);
+
+// same as `str8_array_from_list`, but deep-copies each string's contents
+// into `arena` as well.
+Str8Array str8_array_from_list_copy(Arena *arena, Str8List *list);
+
+// allocates a `Str8Array` with `count` capacity slots.
+// callers that fill in entries should update the
+// returned `Str8Array`'s `count` field themselves to reflect how many were written.
+Str8Array str8_array_reserve(Arena *arena, u64 count);
+
+// returns an independent deep copy of `array`, allocated from `arena`.
+// the result always has `count == size == array.count`.
+// any spare capacity `array` had beyond `array.count` is not preserved in the copy.
+Str8Array str8_array_copy(Arena *arena, Str8Array array);
 
 // split & join
 

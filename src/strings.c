@@ -582,3 +582,57 @@ Str8 str8_list_join(Arena *arena, Str8List *list, StringJoin *optional_params) {
   *ptr = 0;
   return result;
 }
+
+// string array function
+
+Str8Array str8_array_zero(void) {
+  Str8Array zero = {0};
+  return zero;
+}
+
+Str8Array str8_array_from_list(Arena *arena, Str8List *list) {
+  Str8Array array = {
+      .count = list->node_count,
+      .size = list->node_count,
+      .v = push_array_no_zero(arena, Str8, list->node_count),
+  };
+  u64 idx = 0;
+  for (Str8Node *n = list->first; n != 0; n = n->next, idx += 1) {
+    array.v[idx] = n->str;
+  }
+  return array;
+}
+
+Str8Array str8_array_copy_from_list(Arena *arena, Str8List *list) {
+  Str8Array array = {
+      .count = list->node_count,
+      .size = list->node_count,
+      .v = push_array_no_zero(arena, Str8, list->node_count),
+  };
+  u64 idx = 0;
+  for (Str8Node *n = list->first; n != 0; n = n->next, idx += 1) {
+    array.v[idx] = str8_copy(arena, n->str);
+  }
+  return array;
+}
+
+Str8Array str8_array_reserve(Arena *arena, u64 count) {
+  Str8Array arr = {
+      .count = 0,
+      .size = count,
+      .v = push_array(arena, Str8, count),
+  };
+  return arr;
+}
+
+Str8Array str8_array_copy(Arena *arena, Str8Array array) {
+  Str8Array result = {
+      .count = array.count,
+      .size = array.count,
+      .v = push_array_no_zero(arena, Str8, array.count),
+  };
+  for (u64 idx = 0; idx < result.count; idx++) {
+    result.v[idx] = str8_copy(arena, array.v[idx]);
+  }
+  return result;
+}
