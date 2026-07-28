@@ -106,12 +106,12 @@ i64 file_id_compare(FileID a, FileID b) {
   return cmp;
 }
 
-Str8 string_from_file_range(Arena *arena, File file, u64 min, u64 max) {
+Str8 string_from_file_range(Arena *arena, File file, u64 mn, u64 mx) {
   u64 pre_pos = arena_pos(arena);
   Str8 result;
-  result.size = (max >= min) ? max - min : 0;
+  result.size = (mx >= mn) ? mx - mn : 0;
   result.str = push_array_no_zero(arena, u8, result.size);
-  u64 actual_read_size = file_read(file, min, max, result.str);
+  u64 actual_read_size = file_read(file, mn, mx, result.str);
   if (actual_read_size < result.size) {
     arena_pop_to(arena, pre_pos + actual_read_size);
     result.size = actual_read_size;

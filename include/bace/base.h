@@ -71,10 +71,16 @@ typedef enum OperatingSystem {
 // generic function type used for loading arbitrary symbols out of dynamic libraries
 typedef void VoidProc(void);
 
-#define KB(val) ((val)   * 1024LL) // cf-off
+// clang-format off
+#define KB(val) ((val)   * 1024LL)
 #define MB(val) (KB(val) * 1024LL)
 #define GB(val) (MB(val) * 1024LL)
 #define TB(val) (GB(val) * 1024LL)
+
+#define Thousand(n) ((n) * 1000)
+#define Million(n)  ((n) * 1000000)
+#define Billion(n)  ((n) * 1000000000)
+// clang-format on
 
 // fixed-width integer type aliases
 typedef int8_t i8;

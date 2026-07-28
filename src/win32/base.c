@@ -147,16 +147,16 @@ void file_close(File file) {
   (void)result;
 }
 
-u64 file_read(File file, u64 min, u64 max, void *out_data) {
+u64 file_read(File file, u64 mn, u64 mx, void *out_data) {
   if (file_match(file, file_zero())) {
     return 0;
   }
 
   HANDLE handle = (HANDLE)file.u64[0];
   u8 *ptr = out_data;
-  u64 off = min;
-  while (off != max) {
-    u64 amt64 = max - off;
+  u64 off = mn;
+  while (off != mx) {
+    u64 amt64 = mx - off;
     u32 amt32 = (u32)min(MB(32), amt64);
     DWORD read_size = 0;
     OVERLAPPED overlapped = {.Offset = (u32)off, .OffsetHigh = (u32)(off >> 32)};
@@ -167,18 +167,18 @@ u64 file_read(File file, u64 min, u64 max, void *out_data) {
     off += read_size;
   }
 
-  u64 total_read_size = off - min;
+  u64 total_read_size = off - mn;
   return total_read_size;
 }
 
-u64 file_write(File file, u64 min, u64 max, void *data) {
+u64 file_write(File file, u64 mn, u64 mx, void *data) {
   if (file_match(file, file_zero())) {
     return 0;
   }
   HANDLE win_handle = (HANDLE)file.u64[0];
   u64 src_off = 0;
-  u64 dst_off = min;
-  u64 total_write_size = (max >= min) ? max - min : 0;
+  u64 dst_off = mn;
+  u64 total_write_size = (mx >= mn) ? mx - mn : 0;
   for (;;) {
     void *bytes_src = (u8 *)data + src_off;
     u64 bytes_left = total_write_size - src_off;

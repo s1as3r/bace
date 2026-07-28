@@ -105,9 +105,9 @@ Str8 str8fv(Arena *arena, const char *fmt, va_list args);
 Str8 str8f(Arena *arena, char *fmt, ...);
 
 // slicing
-// returns the sub-range [min, max) of `str`
+// returns the sub-range [`mn`, `mx`) of `str`
 // (byte offsets, not clamped to character boundaries for multi-byte UTF-8).
-Str8 str8_substr(Str8 str, u64 min, u64 max);
+Str8 str8_substr(Str8 str, u64 mn, u64 mx);
 
 // first `size` bytes of `str`.
 Str8 str8_prefix(Str8 str, u64 size);
@@ -227,9 +227,9 @@ Str8Node *str8_list_pop_front(Str8List *list);
 Str8List str8_list_copy(Arena *arena, Str8List *list);
 
 // returns the sub-list of nodes corresponding to the logical
-// character range [`min`, `max`) across the whole concatenated list,
+// character range [`mn`, `mx`) across the whole concatenated list,
 // allocating any newly-needed nodes/strings from `arena`.
-Str8List str8_list_substr(Arena *arena, Str8List list, u64 min, u64 max);
+Str8List str8_list_substr(Arena *arena, Str8List list, u64 mn, u64 mx);
 
 #define str8_list_first(list) ((list)->first ? (list)->first->string : str8_zero())
 

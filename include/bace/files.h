@@ -65,15 +65,15 @@ bool write_data_list_to_file_path(Str8 path, Str8List list);
 bool append_data_to_file_path(Str8 path, Str8 data);
 FileID id_from_file_path(Str8 path);
 i64 file_id_compare(FileID a, FileID b);
-Str8 string_from_file_range(Arena *arena, File file, u64 min, u64 max);
+Str8 string_from_file_range(Arena *arena, File file, u64 mn, u64 mx);
 Str8 file_read_cstring(Arena *arena, File file, u64 off);
 
 // implemented by each os
 File file_open(AccessFlags flags, Str8 path);
 void file_close(File file);
-u64 file_read(File file, u64 min, u64 max, void *out_data);
+u64 file_read(File file, u64 mn, u64 mx, void *out_data);
 #define file_read_struct(f, off, ptr) file_read((f), (off), (off) + sizeof(*(ptr)), (ptr))
-u64 file_write(File file, u64 min, u64 max, void *data);
+u64 file_write(File file, u64 mn, u64 mx, void *data);
 bool file_set_times(File file, DateTime time);
 FileProperties properties_from_file(File file);
 FileID id_from_file(File file);

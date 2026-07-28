@@ -166,11 +166,11 @@ Str8 str8f(Arena *arena, char *fmt, ...) {
 }
 
 // slicing
-Str8 str8_substr(Str8 str, u64 min, u64 max) {
-  min = min(min, str.size);
-  max = min(max, str.size);
-  str.str += min;
-  str.size = (max > min) ? (max - min) : 0;
+Str8 str8_substr(Str8 str, u64 mn, u64 mx) {
+  mn = min(mn, str.size);
+  mx = min(mx, str.size);
+  str.str += mn;
+  str.size = (mx > mn) ? (mx - mn) : 0;
   return str;
 }
 
@@ -484,20 +484,20 @@ Str8List str8_list_copy(Arena *arena, Str8List *list) {
   return result;
 }
 
-Str8List str8_list_substr(Arena *arena, Str8List list, u64 min, u64 max) {
+Str8List str8_list_substr(Arena *arena, Str8List list, u64 mn, u64 mx) {
   Str8List result = {0};
   Str8Node *n = list.first;
 
   u64 front_min = 0;
   u64 cursor = 0;
   for (; n != 0; cursor += n->str.size, n = n->next) {
-    if (cursor + n->str.size > min) {
-      front_min = min - cursor;
+    if (cursor + n->str.size > mn) {
+      front_min = mn - cursor;
       break;
     }
   }
 
-  u64 range_sz = max > min ? max - min : 0;
+  u64 range_sz = mx > mn ? mx - mn : 0;
   if (front_min > 0) {
     u64 front_max = front_min + min(range_sz, n->str.size);
     str8_list_push(arena, &result, str8_substr(n->str, front_min, front_max));
