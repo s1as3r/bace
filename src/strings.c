@@ -636,3 +636,216 @@ Str8Array str8_array_copy(Arena *arena, Str8Array array) {
   }
   return result;
 }
+
+// utf stuff
+
+global u8 utf8_class[32] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 3, 3, 4, 5,
+};
+
+global const u32 bitmask1 = 0x00000001;
+global const u32 bitmask2 = 0x00000003;
+global const u32 bitmask3 = 0x00000007;
+global const u32 bitmask4 = 0x0000000f;
+global const u32 bitmask5 = 0x0000001f;
+global const u32 bitmask6 = 0x0000003f;
+global const u32 bitmask7 = 0x0000007f;
+global const u32 bitmask8 = 0x000000ff;
+global const u32 bitmask9 = 0x000001ff;
+global const u32 bitmask10 = 0x000003ff;
+global const u32 bitmask11 = 0x000007ff;
+global const u32 bitmask12 = 0x00000fff;
+global const u32 bitmask13 = 0x00001fff;
+global const u32 bitmask14 = 0x00003fff;
+global const u32 bitmask15 = 0x00007fff;
+global const u32 bitmask16 = 0x0000ffff;
+global const u32 bitmask17 = 0x0001ffff;
+global const u32 bitmask18 = 0x0003ffff;
+global const u32 bitmask19 = 0x0007ffff;
+global const u32 bitmask20 = 0x000fffff;
+global const u32 bitmask21 = 0x001fffff;
+global const u32 bitmask22 = 0x003fffff;
+global const u32 bitmask23 = 0x007fffff;
+global const u32 bitmask24 = 0x00ffffff;
+global const u32 bitmask25 = 0x01ffffff;
+global const u32 bitmask26 = 0x03ffffff;
+global const u32 bitmask27 = 0x07ffffff;
+global const u32 bitmask28 = 0x0fffffff;
+global const u32 bitmask29 = 0x1fffffff;
+global const u32 bitmask30 = 0x3fffffff;
+global const u32 bitmask31 = 0x7fffffff;
+global const u32 bitmask32 = 0xffffffff;
+
+UnicodeDecode utf8_decode(u8 *str, u64 max) {
+  UnicodeDecode result = {1, UINT32_MAX};
+  u8 byte = str[0];
+  u8 byte_class = utf8_class[byte >> 3];
+  switch (byte_class) {
+  case 1: {
+    result.codepoint = byte;
+  } break;
+  case 2: {
+    if (1 < max) {
+      u8 cont_byte = str[1];
+      if (utf8_class[cont_byte >> 3] == 0) {
+        result.codepoint = (byte & bitmask5) << 6;
+        result.codepoint |= (cont_byte & bitmask6);
+        result.inc = 2;
+      }
+    }
+  } break;
+  case 3: {
+    if (2 < max) {
+      u8 cont_byte[2] = {str[1], str[2]};
+      if (utf8_class[cont_byte[0] >> 3] == 0 && utf8_class[cont_byte[1] >> 3] == 0) {
+        result.codepoint = (byte & bitmask4) << 12;
+        result.codepoint |= ((cont_byte[0] & bitmask6) << 6);
+        result.codepoint |= (cont_byte[1] & bitmask6);
+        result.inc = 3;
+      }
+    }
+  } break;
+  case 4: {
+    if (3 < max) {
+      u8 cont_byte[3] = {str[1], str[2], str[3]};
+      if (utf8_class[cont_byte[0] >> 3] == 0 && utf8_class[cont_byte[1] >> 3] == 0 &&
+          utf8_class[cont_byte[2] >> 3] == 0) {
+        result.codepoint = (byte & bitmask3) << 18;
+        result.codepoint |= ((cont_byte[0] & bitmask6) << 12);
+        result.codepoint |= ((cont_byte[1] & bitmask6) << 6);
+        result.codepoint |= (cont_byte[2] & bitmask6);
+        result.inc = 4;
+      }
+    }
+  }
+  }
+  return result;
+}
+
+UnicodeDecode utf16_decode(u16 *str, u64 max) {
+  UnicodeDecode result = {1, UINT32_MAX};
+  result.codepoint = str[0];
+  result.inc = 1;
+  if (max > 1 && 0xD800 <= str[0] && str[0] < 0xDC00 && 0xDC00 <= str[1] &&
+      str[1] < 0xE000) {
+    result.codepoint = (u32)((str[0] - 0xD800) << 10) | ((str[1] - 0xDC00) + 0x10000);
+    result.inc = 2;
+  }
+  return result;
+}
+
+u32 utf8_encode(u8 *str, u32 codepoint) {
+  u32 inc = 0;
+  if (codepoint <= 0x7F) {
+    str[0] = (u8)codepoint;
+    inc = 1;
+  } else if (codepoint <= 0x7FF) {
+    str[0] = (bitmask2 << 6) | ((codepoint >> 6) & bitmask5);
+    str[1] = (1 << 7) | (codepoint & bitmask6);
+    inc = 2;
+  } else if (codepoint <= 0xFFFF) {
+    str[0] = (bitmask3 << 5) | ((codepoint >> 12) & bitmask4);
+    str[1] = (1 << 7) | ((codepoint >> 6) & bitmask6);
+    str[2] = (1 << 7) | (codepoint & bitmask6);
+    inc = 3;
+  } else if (codepoint <= 0x10FFFF) {
+    str[0] = (bitmask4 << 4) | ((codepoint >> 18) & bitmask3);
+    str[1] = (1 << 7) | ((codepoint >> 12) & bitmask6);
+    str[2] = (1 << 7) | ((codepoint >> 6) & bitmask6);
+    str[3] = (1 << 7) | (codepoint & bitmask6);
+    inc = 4;
+  } else {
+    str[0] = '?';
+    inc = 1;
+  }
+  return inc;
+}
+
+u32 utf16_encode(u16 *str, u32 codepoint) {
+  u32 inc = 1;
+  if (codepoint == UINT32_MAX) {
+    str[0] = (u16)'?';
+  } else if (codepoint < 0x10000) {
+    str[0] = (u16)codepoint;
+  } else {
+    u32 v = codepoint - 0x10000;
+    str[0] = (u16)(0xD800 + (v >> 10));
+    str[1] = (u16)(0xDC00 + (v & bitmask10));
+    inc = 2;
+  }
+  return inc;
+}
+
+// Str16 stuff
+
+u64 cstring16_length(const u16 *str) {
+  u64 len = 0;
+  if (!str) {
+    return len;
+  }
+  u16 *p = (u16 *)str;
+  for (; *p != 0; p += 1);
+  len = (u64)(p - str);
+  return len;
+}
+
+Str16 str16_zero(void) {
+  Str16 result = {0};
+  return result;
+}
+
+Str16 str16(u16 *str, u64 size) {
+  Str16 result = {str, size};
+  return result;
+}
+
+Str16 str16_range(u16 *first, u16 *one_past_last) {
+  Str16 result = {first, (u64)(one_past_last - first)};
+  return result;
+}
+
+Str16 str16_cstring(u16 *str) {
+  Str16 result = {(u16 *)str, cstring16_length(str)};
+  return result;
+}
+
+Str8 str8_from_16(Arena *arena, Str16 in) {
+  Str8 result = str8_zero();
+  if (in.size) {
+    u64 cap = in.size * 3;
+    u8 *str = push_array_no_zero(arena, u8, cap + 1);
+    u16 *ptr = in.str;
+    u16 *opl = ptr + in.size;
+    u64 size = 0;
+    UnicodeDecode consume;
+    for (; ptr < opl; ptr += consume.inc) {
+      consume = utf16_decode(ptr, (u64)(opl - ptr));
+      size += utf8_encode(str + size, consume.codepoint);
+    }
+    str[size] = 0;
+    arena_pop(arena, (cap - size));
+    result = str8(str, size);
+  }
+  return result;
+}
+
+Str16 str16_from_8(Arena *arena, Str8 in) {
+  Str16 result = str16_zero();
+  if (in.size) {
+    u64 cap = in.size * 2;
+    u16 *str = push_array_no_zero(arena, u16, cap + 1);
+    u8 *ptr = in.str;
+    u8 *opl = ptr + in.size;
+    u64 size = 0;
+    UnicodeDecode consume;
+    for (; ptr < opl; ptr += consume.inc) {
+      consume = utf8_decode(ptr, (u64)(opl - ptr));
+      size += utf16_encode(str + size, consume.codepoint);
+    }
+    str[size] = 0;
+    arena_pop(arena, (cap - size) * 2);
+    result = str16(str, size);
+  }
+  return result;
+}

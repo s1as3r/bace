@@ -295,4 +295,69 @@ Str8List str8_split_by_string_chars(Arena *arena, Str8 string, Str8 split_chars,
 // optionally using `optional_params` for separator/pre/post text.
 Str8 str8_list_join(Arena *arena, Str8List *list, StringJoin *optional_params);
 
+// UTF decoding stuff
+
+// result of decoding one unicode value from an encoded byte/unit sequence
+typedef struct UnicodeDecode {
+  // number of source units consumed by this decode.
+  u32 inc;
+  // decoded unicode scalar value
+  u32 codepoint;
+} UnicodeDecode;
+
+// decodes one unicode value starting at `str`, where `max` is the number of bytes
+// available to read from `str`.
+// on success, `.codepoint` is the decoded value and `.inc` is 1/2/3/4 depending on the
+// encoding length.
+// on failure, `.codepoint` is `UINT32_MAX` and `.inc` is 1.
+UnicodeDecode utf8_decode(u8 *str, u64 max);
+
+// decodes one unicode scalar value starting at `str`, where `max` is the number of u16
+// units available to read from `str`.
+// if `str[0]` is a high surrogate and `max > 1` and `str[1]` is a matching low surrogate,
+// they are combined into a single supplementary-plane codepoint with `.inc == 2`,
+// otherwise `.codepoint` is simply `str[0]` and `.inc == 1`.
+UnicodeDecode utf16_decode(u16 *str, u64 max);
+
+// encodes `codepoint` as utf-8 into `str`, returning the number of bytes written (1-4).
+// if `codepoint` is greater than 0x10FFFF, writes a single '?' byte and returns 1
+// instead.
+u32 utf8_encode(u8 *str, u32 codepoint);
+
+// encodes `codepoint` as utf-16 into `str`, returning the number of `u16` units written.
+// `codepoint == UINT32_MAX` is encoded in a single `'?'` unit.
+// codepoints below 0x10000 are written as a single unit with no surrogate-range check.
+// codepoints at or above 0x10000 are written as a high/low surrogate pair.
+u32 utf16_encode(u16 *str, u32 codepoint);
+
+// str16 - mainly used for interaction with windows apis
+
+// a utf-16 counterpart to `Str8`.
+typedef struct Str16 {
+  u16 *str;
+  u64 size;
+} Str16;
+
+// length of a null-terminated string `str` in `u16` units.
+// `str` must be null-terminated.
+u64 cstring16_length(const u16 *str);
+
+// returns the empty Str16 ({0, 0}).
+Str16 str16_zero(void);
+
+// wraps an existing `size`-unit buffer as a `Str16`.
+Str16 str16(u16 *str, u64 size);
+
+// wraps the half-open unit range [`first`, `one_past_last`) as a `Str16`.
+Str16 str16_range(u16 *first, u16 *one_past_last);
+
+// wraps a `null`-terminated utf-16 C string, computing its length via `cstring16_length`.
+Str16 str16_cstring(u16 *str);
+
+// converts `in` to a newly-allocated, null-terminated utf-8 `Str8`.
+Str8 str8_from_16(Arena *arena, Str16 in);
+
+// converts `in` to a newly-allocated, null-terminated utf-16 `Str16`.
+Str16 str16_from_8(Arena *arena, Str8 in);
+
 #endif // !_H_STRINGS
