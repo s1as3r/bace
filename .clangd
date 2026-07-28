@@ -1,6 +1,7 @@
 CompileFlags:
   Add: [
     "-xc",
+    "-D_GNU_SOURCE",
     "-Wall",
     "-I/home/slas3r/dev/bace/include",
     "-I/home/slas3r/dev/bace/external/acutest/include",

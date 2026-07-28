@@ -14,7 +14,7 @@ DEBUG=(
 
 # compile time defines
 DEFINES=(
-    "-D_DEFAULT_SOURCE"
+    "-D_GNU_SOURCE"
 )
 
 # linux platform libraries
