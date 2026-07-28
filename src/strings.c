@@ -677,7 +677,7 @@ global const u32 bitmask30 = 0x3fffffff;
 global const u32 bitmask31 = 0x7fffffff;
 global const u32 bitmask32 = 0xffffffff;
 
-UnicodeDecode utf8_decode(u8 *str, u64 max) {
+UnicodeDecode utf8_decode(u8 *str, u64 mx) {
   UnicodeDecode result = {1, UINT32_MAX};
   u8 byte = str[0];
   u8 byte_class = utf8_class[byte >> 3];
@@ -686,7 +686,7 @@ UnicodeDecode utf8_decode(u8 *str, u64 max) {
     result.codepoint = byte;
   } break;
   case 2: {
-    if (1 < max) {
+    if (1 < mx) {
       u8 cont_byte = str[1];
       if (utf8_class[cont_byte >> 3] == 0) {
         result.codepoint = (byte & bitmask5) << 6;
@@ -696,7 +696,7 @@ UnicodeDecode utf8_decode(u8 *str, u64 max) {
     }
   } break;
   case 3: {
-    if (2 < max) {
+    if (2 < mx) {
       u8 cont_byte[2] = {str[1], str[2]};
       if (utf8_class[cont_byte[0] >> 3] == 0 && utf8_class[cont_byte[1] >> 3] == 0) {
         result.codepoint = (byte & bitmask4) << 12;
@@ -707,7 +707,7 @@ UnicodeDecode utf8_decode(u8 *str, u64 max) {
     }
   } break;
   case 4: {
-    if (3 < max) {
+    if (3 < mx) {
       u8 cont_byte[3] = {str[1], str[2], str[3]};
       if (utf8_class[cont_byte[0] >> 3] == 0 && utf8_class[cont_byte[1] >> 3] == 0 &&
           utf8_class[cont_byte[2] >> 3] == 0) {
@@ -723,11 +723,11 @@ UnicodeDecode utf8_decode(u8 *str, u64 max) {
   return result;
 }
 
-UnicodeDecode utf16_decode(u16 *str, u64 max) {
+UnicodeDecode utf16_decode(u16 *str, u64 mx) {
   UnicodeDecode result = {1, UINT32_MAX};
   result.codepoint = str[0];
   result.inc = 1;
-  if (max > 1 && 0xD800 <= str[0] && str[0] < 0xDC00 && 0xDC00 <= str[1] &&
+  if (mx > 1 && 0xD800 <= str[0] && str[0] < 0xDC00 && 0xDC00 <= str[1] &&
       str[1] < 0xE000) {
     result.codepoint = (u32)((str[0] - 0xD800) << 10) | ((str[1] - 0xDC00) + 0x10000);
     result.inc = 2;

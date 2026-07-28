@@ -305,19 +305,19 @@ typedef struct UnicodeDecode {
   u32 codepoint;
 } UnicodeDecode;
 
-// decodes one unicode value starting at `str`, where `max` is the number of bytes
+// decodes one unicode value starting at `str`, where `mx` is the number of bytes
 // available to read from `str`.
 // on success, `.codepoint` is the decoded value and `.inc` is 1/2/3/4 depending on the
 // encoding length.
 // on failure, `.codepoint` is `UINT32_MAX` and `.inc` is 1.
-UnicodeDecode utf8_decode(u8 *str, u64 max);
+UnicodeDecode utf8_decode(u8 *str, u64 mx);
 
-// decodes one unicode scalar value starting at `str`, where `max` is the number of u16
+// decodes one unicode scalar value starting at `str`, where `mx` is the number of u16
 // units available to read from `str`.
-// if `str[0]` is a high surrogate and `max > 1` and `str[1]` is a matching low surrogate,
+// if `str[0]` is a high surrogate and `mx > 1` and `str[1]` is a matching low surrogate,
 // they are combined into a single supplementary-plane codepoint with `.inc == 2`,
 // otherwise `.codepoint` is simply `str[0]` and `.inc == 1`.
-UnicodeDecode utf16_decode(u16 *str, u64 max);
+UnicodeDecode utf16_decode(u16 *str, u64 mx);
 
 // encodes `codepoint` as utf-8 into `str`, returning the number of bytes written (1-4).
 // if `codepoint` is greater than 0x10FFFF, writes a single '?' byte and returns 1
