@@ -1,3 +1,6 @@
+#ifndef _H_TIME
+#define _H_TIME
+
 #include "bace/base.h"
 
 // time types
@@ -48,8 +51,9 @@ typedef struct DateTime {
 
 typedef u64 DenseTime;
 
-
 DenseTime dense_time_from_date_time(DateTime date_time);
-DateTime  date_time_from_dense_time(DenseTime time);
-DateTime  date_time_from_micro_seconds(u64 time);
-DateTime  date_time_from_unix_time(u64 unix_time);
+DateTime date_time_from_dense_time(DenseTime time);
+DateTime date_time_from_micro_seconds(u64 time);
+DateTime date_time_from_unix_time(u64 unix_time);
+
+#endif // !_H_TIME

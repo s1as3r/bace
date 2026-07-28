@@ -3,6 +3,7 @@
 #include "arena.c"
 #include "strings.c"
 #include "thread_context.c"
+#include "time.c"
 
 #if OS_LINUX
 #include "linux/base.c"
