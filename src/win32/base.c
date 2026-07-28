@@ -70,8 +70,11 @@ SystemInfo *get_system_info(void) {
 
 // dy lib stuff
 DyLib lib_open(Str8 path) {
-  HMODULE mod = LoadLibraryA((LPCSTR)path.str);
+  Temp scratch = scratch_begin(0, 0);
+  Str16 path16 = str16_from_8(scratch.arena, path);
+  HMODULE mod = LoadLibraryW(path16.str);
   DyLib result = {(u64)mod};
+  scratch_end(scratch);
   return result;
 }
 
