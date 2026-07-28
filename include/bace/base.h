@@ -50,9 +50,23 @@
 
 #define array_count(arr) (sizeof(arr) / sizeof(arr[0]))
 
-// rounds `x` to the next multiple of `b`.
-// `b` must be a power of two.
-#define align_pow_2(x, b) (((x) + (b) - 1) & (~((b) - 1)))
+// operating system enum
+typedef enum OperatingSystem {
+  OperatingSystem_Null,
+  OperatingSystem_Windows,
+  OperatingSystem_Linux,
+  OperatingSystem_Mac,
+  OperatingSystem_COUNT,
+#if OS_WINDOWS
+  OperatingSystem_CURRENT = OperatingSystem_Windows,
+#elif OS_LINUX
+  OperatingSystem_CURRENT = OperatingSystem_Linux,
+#elif OS_MAC
+  OperatingSystem_CURRENT = OperatingSystem_Mac,
+#else
+  OperatingSystem_CURRENT = OperatingSystem_Null,
+#endif
+} OperatingSystem;
 
 // generic function type used for loading arbitrary symbols out of dynamic libraries
 typedef void VoidProc(void);
@@ -76,6 +90,12 @@ typedef uint64_t usize;
 
 typedef float f32;
 typedef double f64;
+
+// rounds `x` to the next multiple of `b`.
+// `b` must be a power of two.
+#define align_pow_2(x, b) (((x) + (b) - 1) & (~((b) - 1)))
+#define compose_64bit(hi, lo) ((((u64)hi) << 32) | ((u64)lo))
+#define compose_32bit(hi, lo) ((((u32)hi) << 16) | ((u32)lo))
 
 // linked-list macros
 //
@@ -163,5 +183,11 @@ typedef double f64;
 // singly-linked, singly-headed list helpers
 #define sll_stack_push(f, n) sll_stack_push_n(f, n, next)
 #define sll_stack_pop(f) sll_stack_pop_n(f, next)
+
+// wrapped ring buffer read/write
+u64 wrapped_read(u8 *ring_base, u64 ring_size, u64 ring_pos, void *dst_data,
+                 u64 read_size);
+u64 wrapped_write(u8 *ring_base, u64 ring_size, u64 ring_pos, void *src_data,
+                  u64 src_data_size);
 
 #endif // _H_BASE_DEFS

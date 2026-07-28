@@ -1,9 +1,12 @@
 #include "bace/bace.h"
 
+#include "base.c"
 #include "arena.c"
 #include "strings.c"
 #include "thread_context.c"
 #include "time.c"
+#include "path.c"
+#include "files.c"
 
 #if OS_LINUX
 #include "linux/base.c"

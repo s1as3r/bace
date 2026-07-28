@@ -68,7 +68,7 @@ DateTime date_time_from_unix_time(u64 unix_time) {
 
   for (;;) {
     for (date.month = 0; date.month < 12; ++date.month) {
-      u64 c = 0;
+      u16 c = 0;
       switch (date.month) {
       case Month_Jan:
         c = 31;
@@ -111,7 +111,7 @@ DateTime date_time_from_unix_time(u64 unix_time) {
         c = 31;
         break;
       default:
-        assert(!(bool)"unreachable");
+        assert(false); // unreachable
       }
       if (date.day <= c) {
         goto exit;
