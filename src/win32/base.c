@@ -88,3 +88,29 @@ VoidProc *lib_load_proc(DyLib lib, Str8 name) {
   VoidProc *result = (VoidProc *)GetProcAddress(mod, (LPCSTR)name.str);
   return result;
 }
+void w32_system_time_from_date_time(SYSTEMTIME *out, DateTime *in) {
+  out->wYear = (WORD)(in->year);
+  out->wMonth = (WORD)(in->mon + 1);
+  out->wDay = in->day;
+  out->wHour = in->hour;
+  out->wMinute = in->min;
+  out->wSecond = in->sec;
+  out->wMilliseconds = in->msec;
+}
+void w32_date_time_from_system_time(DateTime *out, SYSTEMTIME *in) {
+  out->year = in->wYear;
+  out->mon = in->wMonth - 1;
+  out->wday = in->wDayOfWeek;
+  out->day = in->wDay;
+  out->hour = in->wHour;
+  out->min = in->wMinute;
+  out->sec = in->wSecond;
+  out->msec = in->wMilliseconds;
+}
+void w32_dense_time_from_file_time(DenseTime *out, FILETIME *in) {
+  SYSTEMTIME systime = {0};
+  FileTimeToSystemTime(in, &systime);
+  DateTime date_time = {0};
+  w32_date_time_from_system_time(&date_time, &systime);
+  *out = dense_time_from_date_time(date_time);
+}
