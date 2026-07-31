@@ -13,6 +13,9 @@
 #include "bace/strings.h"        // IWYU pragma: export
 #include "bace/thread_context.h" // IWYU pragma: export
 #include "bace/math.h"           // IWYU pragma: export
+#include "bace/time.h"           // IWYU pragma: export
+#include "bace/path.h"           // IWYU pragma: export
+#include "bace/files.h"          // IWYU pragma: export
 
 #if OS_LINUX
 #include "bace/linux/base.h" // IWYU pragma: export
