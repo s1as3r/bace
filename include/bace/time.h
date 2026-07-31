@@ -1,9 +1,16 @@
+// time.h
+//
+// provides types and functions for handling datetime
+//
+// references: raddebugger, mr4th
+
 #ifndef _H_TIME
 #define _H_TIME
 
 #include "bace/base.h"
 
 // time types
+
 typedef enum WeekDay {
   WeekDay_Sun,
   WeekDay_Mon,

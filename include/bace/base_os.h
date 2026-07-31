@@ -2,6 +2,8 @@
 //
 // platform-abstraction layer: declarations for os-provided facilities that every
 // supported OS backend (`linux/base.h`, `win32/base.h`, ...) must implement.
+//
+// references: mr4h, raddebugger
 
 #ifndef _H_BASE_OS
 #define _H_BASE_OS

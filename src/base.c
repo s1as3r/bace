@@ -1,5 +1,6 @@
-#include "bace/base.h"
 #include <string.h>
+
+#include "bace/base.h"
 
 u64 wrapped_write(u8 *ring_base, u64 ring_size, u64 ring_pos, void *src_data,
                   u64 src_data_size) {

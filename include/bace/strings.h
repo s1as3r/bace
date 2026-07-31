@@ -10,14 +10,16 @@
 // functions that only need to *view* existing memory (e.g. `str8_substr`, `str8_prefix`)
 // return a `Str8` that aliases the input's backing storage and do not allocate.
 // the caller must ensure that storage outlives the returned `Str8`.
+//
+// references: mr4th, raddebugger
 
 #ifndef _H_STRINGS
 #define _H_STRINGS
 
+#include <stdarg.h>
+
 #include "arena.h"
 #include "base.h"
-
-#include <stdarg.h>
 
 // a byte string: `str` points to `size` bytes, *NOT* guaranteed to be
 // null-terminated.

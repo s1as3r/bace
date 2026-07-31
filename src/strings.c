@@ -1,9 +1,9 @@
+#include <string.h>
+#include <stdio.h>
+
 #include "bace/base.h"
 #include "bace/strings.h"
 #include "bace/arena.h"
-
-#include <string.h>
-#include <stdio.h>
 
 // clang-format off
 global u8 integer_symbol_reverse[128] =

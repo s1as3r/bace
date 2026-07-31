@@ -1,13 +1,13 @@
 #ifndef _H_LINUX_BASE
 #define _H_LINUX_BASE
 
-#include "bace/base.h" // IWYU pragma: export
-#include "bace/base_os.h"
-#include "bace/arena.h"
-
 #include <sys/mman.h>
 #include <sys/sysinfo.h>
 #include <dirent.h>
+
+#include "bace/base.h" // IWYU pragma: export
+#include "bace/base_os.h"
+#include "bace/arena.h"
 
 typedef struct LinuxState {
   Arena *arena;

@@ -1,5 +1,6 @@
-#include "bace/math.h"
 #include <math.h>
+
+#include "bace/math.h"
 
 f32 lerp_f32(f32 a, f32 b, f32 t) {
   return a + (b - a) * clamp(t, 0.0f, 1.0f);

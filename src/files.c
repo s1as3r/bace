@@ -1,4 +1,5 @@
 #include <string.h>
+
 #include "bace/files.h"
 #include "bace/thread_context.h"
 

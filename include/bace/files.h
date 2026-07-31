@@ -1,4 +1,8 @@
 // files.h
+//
+// provides types and functions for working with files.
+//
+// references: raddebugger, mr4th
 
 #ifndef _H_FILES
 #define _H_FILES

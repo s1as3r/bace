@@ -1,6 +1,7 @@
+#include <threads.h>
+
 #include "bace/thread_context.h"
 #include "bace/arena.h"
-#include <threads.h>
 
 thread_local TCTX *tctx_thread_local;
 

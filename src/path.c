@@ -1,6 +1,7 @@
+#include <string.h>
+
 #include "bace/thread_context.h"
 #include "bace/path.h"
-#include <string.h>
 
 global struct {
   Str8 string;
@@ -176,6 +177,7 @@ Str8 str8_path_list_join_by_style(Arena *arena, Str8List *path, PathStyle style)
   Str8 result = str8_list_join(arena, path, &params);
   return result;
 }
+
 Str8 path_relative_dst_from_absolute_dst_src(Arena *arena, Str8 dst, Str8 src) {
   Temp scratch = scratch_begin(&arena, 1);
 
@@ -244,6 +246,7 @@ Str8 path_relative_dst_from_absolute_dst_src(Arena *arena, Str8 dst, Str8 src) {
   scratch_end(scratch);
   return dst_path;
 }
+
 Str8 path_absolute_dst_from_relative_dst_src(Arena *arena, Str8 dst, Str8 src) {
   Str8 result = dst;
   PathStyle dst_style = path_style_from_str8(dst);

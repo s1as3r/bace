@@ -1,7 +1,3 @@
-#include "bace/linux/base.h"
-#include "bace/thread_context.h"
-#include "bace/files.h"
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,6 +8,10 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/sendfile.h>
+
+#include "bace/linux/base.h"
+#include "bace/thread_context.h"
+#include "bace/files.h"
 
 global LinuxState linux_state = {0};
 
