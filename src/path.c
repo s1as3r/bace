@@ -1,5 +1,4 @@
-#include <string.h>
-
+#include "bace/strings.h"
 #include "bace/thread_context.h"
 #include "bace/path.h"
 
@@ -53,6 +52,9 @@ Str8 str8_chop_last_dot(Str8 str) {
   u64 p = str.size;
   for (; p > 0;) {
     p -= 1;
+    if (char_is_slash(str.str[p])) {
+      break;
+    }
     if (str.str[p] == '.') {
       result = str8_prefix(str, p);
       break;
@@ -66,6 +68,9 @@ Str8 str8_skip_last_dot(Str8 str) {
   u64 p = str.size;
   for (; p > 0;) {
     p -= 1;
+    if (char_is_slash(str.str[p])) {
+      break;
+    }
     if (str.str[p] == '.') {
       result = str8_skip(str, p + 1);
       break;
@@ -92,71 +97,79 @@ Str8List str8_split_path(Arena *arena, Str8 string) {
 }
 
 void str8_path_list_resolve_dots_in_place(Str8List *path, PathStyle style) {
-  Temp scratch = scratch_begin(0, 0);
-  typedef struct Str8MetaNode Str8MetaNode;
-  struct Str8MetaNode {
-    Str8MetaNode *next;
-    Str8Node *node;
-  };
-  Str8MetaNode *stack = 0;
-  Str8MetaNode *free_meta_node = 0;
-  Str8Node *first = path->first;
-  memset(path, 0, sizeof(*path));
-  for (Str8Node *node = first, *next = 0; node != 0; node = next) {
-    // save next now
+  Str8List new_path = {0};
+
+  for (Str8Node *node = path->first, *next = 0; node != 0; node = next) {
+    // save next now before we mutate the node
     next = node->next;
 
-    // cases:
-    if (node == first && style == PathStyle_WindowsAbsolute) {
-      goto save_without_stack;
+    // skip empty segments
+    if (node->str.size == 0) {
+      continue;
     }
+
+    // skip single dots
     if (node->str.size == 1 && node->str.str[0] == '.') {
-      goto do_nothing;
+      continue;
     }
+
+    // handle double dots (backtrack)
     if (node->str.size == 2 && node->str.str[0] == '.' && node->str.str[1] == '.') {
-      if (stack != 0) {
-        goto eliminate_stack_top;
+      bool can_pop = false;
+      if (new_path.node_count > 0) {
+        Str8Node *last = new_path.last;
+        bool is_dotdot =
+            (last->str.size == 2 && last->str.str[0] == '.' && last->str.str[1] == '.');
+        bool is_windows_root =
+            (style == PathStyle_WindowsAbsolute && new_path.node_count == 1);
+
+        // we can only pop if the previous node isn't another ".."
+        // and isn't the root drive letter of an absolute Windows path
+        if (!is_dotdot && !is_windows_root) {
+          can_pop = true;
+        }
+      }
+
+      if (can_pop) {
+        // pop the last directory
+        new_path.node_count -= 1;
+        new_path.total_size -= new_path.last->str.size;
+
+        if (new_path.node_count == 0) {
+          new_path.first = 0;
+          new_path.last = 0;
+        } else {
+          // find the new tail
+          Str8Node *tail = new_path.first;
+          for (u64 i = 1; i < new_path.node_count; ++i) {
+            tail = tail->next;
+          }
+          new_path.last = tail;
+          new_path.last->next = 0;
+        }
+        continue;
       } else {
-        goto save_without_stack;
+        // if this is an absolute path at the root, ignore the backtrack.
+        if (style == PathStyle_WindowsAbsolute && new_path.node_count == 1) {
+          continue;
+        }
+        if (style == PathStyle_UnixAbsolute && new_path.node_count == 0) {
+          continue;
+        }
+
+        node->next = 0;
+        str8_list_push_node(&new_path, node);
+        continue;
       }
     }
-    goto save_with_stack;
 
-  // handlers:
-  save_with_stack: {
-    str8_list_push_node(path, node);
-    Str8MetaNode *stack_node = free_meta_node;
-    if (stack_node != 0) {
-      sll_stack_pop(free_meta_node);
-    } else {
-      stack_node = push_array_no_zero(scratch.arena, Str8MetaNode, 1);
-    }
-    sll_stack_push(stack, stack_node);
-    stack_node->node = node;
-    continue;
+    // normal folder/file
+    node->next = 0; // sever old forward links before pushing
+    str8_list_push_node(&new_path, node);
   }
 
-  save_without_stack: {
-    str8_list_push_node(path, node);
-    continue;
-  }
-
-  eliminate_stack_top: {
-    path->node_count -= 1;
-    path->total_size -= stack->node->str.size;
-    sll_stack_pop(stack);
-    if (stack == 0) {
-      path->last = path->first;
-    } else {
-      path->last = stack->node;
-    }
-    continue;
-  }
-
-  do_nothing:
-    continue;
-  }
-  scratch_end(scratch);
+  // replace original list with our safely constructed one
+  *path = new_path;
 }
 
 Str8 str8_path_list_join_by_style(Arena *arena, Str8List *path, PathStyle style) {
@@ -181,39 +194,43 @@ Str8 str8_path_list_join_by_style(Arena *arena, Str8List *path, PathStyle style)
 Str8 path_relative_dst_from_absolute_dst_src(Arena *arena, Str8 dst, Str8 src) {
   Temp scratch = scratch_begin(&arena, 1);
 
-  // rjf: gather path parts
+  // gather path parts
   Str8 dst_name = str8_skip_last_slash(dst);
-  Str8 src_folder = src;
+  Str8 src_folder = str8_chop_last_slash(src);
   Str8 dst_folder = str8_chop_last_slash(dst);
+
   Str8List src_folders = str8_split_path(scratch.arena, src_folder);
   Str8List dst_folders = str8_split_path(scratch.arena, dst_folder);
 
-  // rjf: count # of backtracks to get from src -> dest
+  // count # of backtracks to get from src -> dest
   u64 num_backtracks = src_folders.node_count;
-  for (Str8Node *src_n = src_folders.first, *bp_n = dst_folders.first;
-       src_n != 0 && bp_n != 0; src_n = src_n->next, bp_n = bp_n->next) {
-    if (str8_match(src_n->str, bp_n->str,
+  Str8Node *src_n = src_folders.first;
+  Str8Node *dst_n = dst_folders.first;
+  while (src_n != 0 && dst_n != 0) {
+    if (str8_match(src_n->str, dst_n->str,
                    path_match_flags_from_os(OperatingSystem_CURRENT))) {
       num_backtracks -= 1;
+      src_n = src_n->next;
+      dst_n = dst_n->next;
     } else {
       break;
     }
   }
 
-  // rjf: only build relative string if # of backtracks is not the entire `src`.
+  // only build relative string if # of backtracks is not the entire `src`.
   // if getting to `dst` from `src` requires erasing the entire `src`, then the
   // only possible way to get to `dst` from `src` is via absolute path.
   Str8 dst_path = {0};
   if (num_backtracks >= src_folders.node_count) {
     dst_path = dst;
   } else {
-    // rjf: build backtrack parts
+    // build backtrack parts
     Str8List dst_path_strs = {0};
     for (u64 idx = 0; idx < num_backtracks; idx += 1) {
       str8_list_push(scratch.arena, &dst_path_strs, str8_lit(".."));
     }
 
-    // rjf: build parts of dst which are unique from src
+    // build parts of dst which are unique from src
     {
       bool unique_from_src = 0;
       for (Str8Node *src_n = src_folders.first, *bp_n = dst_folders.first; bp_n != 0;
@@ -233,10 +250,10 @@ Str8 path_relative_dst_from_absolute_dst_src(Arena *arena, Str8 dst, Str8 src) {
       }
     }
 
-    // rjf: build file name
+    // build file name
     str8_list_push(scratch.arena, &dst_path_strs, dst_name);
 
-    // rjf: join
+    // join
     StringJoin join = {0};
     {
       join.sep = str8_lit("/");
@@ -250,18 +267,30 @@ Str8 path_relative_dst_from_absolute_dst_src(Arena *arena, Str8 dst, Str8 src) {
 Str8 path_absolute_dst_from_relative_dst_src(Arena *arena, Str8 dst, Str8 src) {
   Str8 result = dst;
   PathStyle dst_style = path_style_from_str8(dst);
+
   if (dst.size != 0 && dst_style == PathStyle_Relative) {
     Temp scratch = scratch_begin(&arena, 1);
-    Str8 dst_from_src_absolute = str8f(scratch.arena, "%S/%S", src, dst);
-    Str8List dst_from_src_absolute_parts =
-        str8_split_path(scratch.arena, dst_from_src_absolute);
-    PathStyle dst_from_src_absolute_style = path_style_from_str8(src);
-    str8_path_list_resolve_dots_in_place(&dst_from_src_absolute_parts,
-                                         dst_from_src_absolute_style);
-    result = str8_path_list_join_by_style(arena, &dst_from_src_absolute_parts,
-                                          dst_from_src_absolute_style);
+    Str8List src_parts = str8_split_path(scratch.arena, src);
+    Str8List dst_parts = str8_split_path(scratch.arena, dst);
+
+    if (dst_parts.node_count > 0) {
+      if (src_parts.node_count == 0) {
+        src_parts = dst_parts;
+      } else {
+        src_parts.last->next = dst_parts.first;
+        src_parts.last = dst_parts.last;
+        src_parts.node_count += dst_parts.node_count;
+        src_parts.total_size += dst_parts.total_size;
+      }
+    }
+
+    PathStyle src_style = path_style_from_str8(src);
+    str8_path_list_resolve_dots_in_place(&src_parts, src_style);
+    result = str8_path_list_join_by_style(arena, &src_parts, src_style);
+
     scratch_end(scratch);
   }
+
   return result;
 }
 
