@@ -204,14 +204,14 @@ Str8 path_relative_dst_from_absolute_dst_src(Arena *arena, Str8 dst, Str8 src) {
 
   // count # of backtracks to get from src -> dest
   u64 num_backtracks = src_folders.node_count;
-  Str8Node *src_n = src_folders.first;
-  Str8Node *dst_n = dst_folders.first;
-  while (src_n != 0 && dst_n != 0) {
-    if (str8_match(src_n->str, dst_n->str,
+  Str8Node *src_node = src_folders.first;
+  Str8Node *dst_node = dst_folders.first;
+  while (src_node != 0 && dst_node != 0) {
+    if (str8_match(src_node->str, dst_node->str,
                    path_match_flags_from_os(OperatingSystem_CURRENT))) {
       num_backtracks -= 1;
-      src_n = src_n->next;
-      dst_n = dst_n->next;
+      src_node = src_node->next;
+      dst_node = dst_node->next;
     } else {
       break;
     }
