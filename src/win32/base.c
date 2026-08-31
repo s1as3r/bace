@@ -204,7 +204,7 @@ u64 file_write(File file, u64 mn, u64 mx, void *data) {
 void w32_system_time_from_date_time(SYSTEMTIME *out, DateTime *in) {
   out->wYear = (WORD)(in->year);
   out->wMonth = (WORD)(in->mon + 1);
-  out->wDay = in->day;
+  out->wDay = (WORD)(in->day + 1);
   out->wHour = in->hour;
   out->wMinute = in->min;
   out->wSecond = in->sec;
@@ -229,7 +229,7 @@ void w32_date_time_from_system_time(DateTime *out, SYSTEMTIME *in) {
   out->year = in->wYear;
   out->mon = in->wMonth - 1;
   out->wday = in->wDayOfWeek;
-  out->day = in->wDay;
+  out->day = in->wDay - 1;
   out->hour = in->wHour;
   out->min = in->wMinute;
   out->sec = in->wSecond;
