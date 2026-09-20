@@ -7,6 +7,7 @@
 #include "time.c"
 #include "path.c"
 #include "files.c"
+#include "math.c"
 
 #if OS_LINUX
 #include "linux/base.c"
