@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 OBJ_NAME="bace.o"
 CC="clang"
 CXX="clang++"
@@ -38,10 +40,7 @@ COMP_FLAGS=(
 
 # build commands
 OBJ_CMD=("$CC" "${DEFINES[@]}" "${DEBUG[@]}" "${COMP_FLAGS[@]}" \
-         "-c" "-o" "$OBJ_NAME" "$SRC/bace.c" "$VMA_OBJ" "${LIBS[@]}")
-
-OBJ_CMD_STR=$(IFS=' '; echo "${OBJ_CMD[*]}")
-
+         "-c" "-o" "$OBJ_NAME" "$SRC/bace.c" "${LIBS[@]}" "$@")
 
 # create build directory if it doesn't exist
 if [[ ! -d "$BUILD_PATH" ]]; then
@@ -51,6 +50,6 @@ fi
 
 cd "$BUILD_PATH" || exit
 echo "===== $OBJ_NAME ====="
-echo "$OBJ_CMD_STR"
+echo "${OBJ_CMD[@]}"
 "${OBJ_CMD[@]}"
 cd ..

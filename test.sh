@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 EXE_PREFIX="test_"
 CC="clang"
 CXX="clang++"
@@ -75,7 +77,7 @@ fi
 
 cd "$BUILD_PATH" || exit
 for file in "$TESTS/"*.c; do
-    fname=$(basename $file)
+    fname=$(basename "$file")
     exe_name="$EXE_PREFIX${fname%.*}"
     exe_cmd=("$CC" "${DEFINES[@]}" "${DEBUG[@]}" "${COMP_FLAGS[@]}" \
     "-o" "$exe_name" "$file" "${LIBS[@]}")

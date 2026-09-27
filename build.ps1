@@ -33,13 +33,11 @@ $CompFlags = @(
 )
 
 # build commands
-$ObjCmd = @($CC) + $Defines + $Debug + $CompFlags + @(
+$ObjCmdArgs = $Defines + $Debug + $CompFlags + @(
     "/c"
     "/Fo`"$ObjName`""
     "`"$Src\bace.c`""
-) + $Libs
-
-$ObjCmdStr = $ObjCmd -join " "
+) + $Libs + $args
 
 # create build directory if it doesn't exist
 if (-not (Test-Path $BuildPath)) {
@@ -49,8 +47,8 @@ if (-not (Test-Path $BuildPath)) {
 
 Push-Location $BuildPath
 Write-Output "===== $ObjName ====="
-Write-Output $ObjCmdStr
-Invoke-Expression $ObjCmdStr
+Write-Output $CC $ObjCmdArgs
+& $CC @ObjCmdArgs
 $exitCode = $LASTEXITCODE
 Pop-Location
 
