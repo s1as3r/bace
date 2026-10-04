@@ -35,8 +35,8 @@ $CompFlags = @(
 # build commands
 $ObjCmdArgs = $Defines + $Debug + $CompFlags + @(
     "/c"
-    "/Fo`"$ObjName`""
-    "`"$Src\bace.c`""
+    "/Fo$ObjName"
+    "$Src\bace.c"
 ) + $Libs + $args
 
 # create build directory if it doesn't exist
@@ -47,7 +47,7 @@ if (-not (Test-Path $BuildPath)) {
 
 Push-Location $BuildPath
 Write-Output "===== $ObjName ====="
-Write-Output $CC $ObjCmdArgs
+Write-Output "$CC $ObjCmdArgs"
 & $CC @ObjCmdArgs
 $exitCode = $LASTEXITCODE
 Pop-Location
