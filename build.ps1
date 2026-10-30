@@ -1,55 +1,71 @@
-# build.ps1 - MSVC (cl.exe) equivalent of build.sh
+[CmdletBinding()]
+param(
+    [switch]$Release
+)
+
 $ErrorActionPreference = "Stop"
 
 $ObjName = "bace.obj"
 $CC = "cl"
 
+$Config = if ($Release -or $env:BUILD_TYPE -eq "Release") { "Release" } else { "Debug" }
+
 $BuildPath = if ($env:BUILD_PATH) { $env:BUILD_PATH }
-else { [System.IO.Path]::GetFullPath((Join-Path (Get-Location) "build")) }
-$Src = (Resolve-Path "./src/").Path
-$Include = (Resolve-Path "./include/").Path
+             else { [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "build")) }
+$Src     = (Resolve-Path (Join-Path $PSScriptRoot "src")).Path
+$Include = (Resolve-Path (Join-Path $PSScriptRoot "include")).Path
 
-# debug flags
-$Debug = @(
-    "/Zi"
-)
+# extra arguments
+$ExtraArgs = if ($env:CC_ARGS) {
+    $env:CC_ARGS -split '\s+' | Where-Object { $_ }
+} else {
+    @()
+}
 
-# compile time defines
+$OptFlags = if ($Release -or $Config -eq "Release") { @("/O2", "/DNDEBUG") }
+            else { @("/Od", "/Zi") }
+
 $Defines = @()
 
-# windows platform libraries
-$Libs = @(
-    # "/LIBPATH:$BuildPath"
-)
-
-# compiler flags
 $CompFlags = @(
     "/I$Include"
     "/W4"
     "/WX"
-    "/Od"
     "/std:c11"
     "/nologo"
-)
+) + $OptFlags
 
-# build commands
-$ObjCmdArgs = $Defines + $Debug + $CompFlags + @(
+$ObjPath = Join-Path $BuildPath $ObjName
+$ObjArgs = $Defines + $CompFlags + @(
     "/c"
-    "/Fo$ObjName"
+    "/Fo$ObjPath"
     "$Src\bace.c"
-) + $Libs + $args
+) + $ExtraArgs
 
-# create build directory if it doesn't exist
-if (-not (Test-Path $BuildPath)) {
-    Write-Output "created build directory"
-    New-Item -ItemType Directory -Path $BuildPath -Force | Out-Null
+
+function Invoke-Native {
+    param([Parameter(Mandatory)][scriptblock]$Command)
+    $global:LASTEXITCODE = 0
+    & $Command | Out-Host
+    if ($LASTEXITCODE -ne 0) {
+        throw "command failed (exit $LASTEXITCODE): $Command"
+    }
 }
 
-Push-Location $BuildPath
-Write-Output "===== $ObjName ====="
-Write-Output "$CC $ObjCmdArgs"
-& $CC @ObjCmdArgs
-$exitCode = $LASTEXITCODE
-Pop-Location
 
-exit $exitCode
+$ok = $false
+try {
+    if (-not (Test-Path $BuildPath)) {
+        Write-Host "created build directory"
+        New-Item -ItemType Directory -Path $BuildPath -Force | Out-Null
+    }
+
+    Write-Host "===== $ObjName ($Config) ====="
+    Write-Host $CC @ObjArgs
+    Invoke-Native { & $CC @ObjArgs }
+    $ok = $true
+} catch {
+    Write-Host "build failed: $($_.Exception.Message)" -ForegroundColor Red
+}
+
+exit ([int](-not $ok))
