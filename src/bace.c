@@ -8,6 +8,7 @@
 #include "path.c"
 #include "files.c"
 #include "math.c"
+#include "rand.c"
 
 #if OS_LINUX
 #include "linux/base.c"
