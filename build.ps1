@@ -21,7 +21,6 @@ $ExtraArgs = if ($env:CC_ARGS) {
 } else {
     @()
 }
-
 $OptFlags = if ($Release -or $Config -eq "Release") { @("/O2", "/DNDEBUG") }
             else { @("/Od", "/Zi") }
 
@@ -31,6 +30,7 @@ $CompFlags = @(
     "/I$Include"
     "/W4"
     "/WX"
+    "/wd4146"
     "/std:c11"
     "/nologo"
 ) + $OptFlags
