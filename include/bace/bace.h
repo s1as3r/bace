@@ -16,5 +16,6 @@
 #include "bace/time.h"           // IWYU pragma: export
 #include "bace/path.h"           // IWYU pragma: export
 #include "bace/files.h"          // IWYU pragma: export
+#include "bace/rand.h"           // IWYU pragma: export
 
 #endif // !_H_BACE

@@ -168,7 +168,7 @@ i64 dot_2i64(Vec2i64 a, Vec2i64 b);
 i64 length_squared_2i64(Vec2i64 v);
 i64 length_2i64(Vec2i64 v);
 
-#define v3f32(x, y) vec_3f32((x), (y))
+#define v3f32(x, y, z) vec_3f32((x), (y), (z))
 Vec3f32 vec_3f32(f32 x, f32 y, f32 z);
 Vec3f32 cross_3f32(Vec3f32 a, Vec3f32 b);
 Vec3f32 add_3f32(Vec3f32 a, Vec3f32 b);
@@ -183,7 +183,7 @@ f32 length_3f32(Vec3f32 v);
 Vec3f32 normalize_3f32(Vec3f32 v);
 Vec3f32 transform_3f32(Vec3f32 v, Mat3x3f32 m);
 
-#define v3i32(x, y) vec_3i32((x), (y))
+#define v3i32(x, y, z) vec_3i32((x), (y), (z))
 Vec3i32 vec_3i32(i32 x, i32 y, i32 z);
 Vec3i32 cross_3i32(Vec3i32 a, Vec3i32 b);
 Vec3i32 add_3i32(Vec3i32 a, Vec3i32 b);
@@ -196,7 +196,7 @@ i32 dot_3i32(Vec3i32 a, Vec3i32 b);
 i32 length_squared_3i32(Vec3i32 v);
 i32 length_3i32(Vec3i32 v);
 
-#define v4f32(x, y) vec_4f32((x), (y))
+#define v4f32(x, y, z, w) vec_4f32((x), (y), (z), (w))
 Vec4f32 vec_4f32(f32 x, f32 y, f32 z, f32 w);
 Vec4f32 add_4f32(Vec4f32 a, Vec4f32 b);
 Vec4f32 sub_4f32(Vec4f32 a, Vec4f32 b);
@@ -209,7 +209,7 @@ f32 length_squared_4f32(Vec4f32 v);
 f32 length_4f32(Vec4f32 v);
 Vec4f32 normalize_4f32(Vec4f32 v);
 
-#define v4i32(x, y) vec_4i32((x), (y))
+#define v4i32(x, y, z, w) vec_4i32((x), (y), (z), (w))
 Vec4i32 vec_4i32(i32 x, i32 y, i32 z, i32 w);
 Vec4i32 add_4i32(Vec4i32 a, Vec4i32 b);
 Vec4i32 sub_4i32(Vec4i32 a, Vec4i32 b);
